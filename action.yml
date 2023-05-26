@@ -1,0 +1,66 @@
+name: 'Hyper-V'
+description: 'Remote control hyper-v virtual machines without SCVMM'
+inputs:
+  vmname:
+    description: 'VM name'
+    required: true
+    default: ''
+  hostname:
+    description: 'Hyper-V hostname or fqdn'
+    required: true
+    default: ''
+  command:
+    description: 'Command to execute, e.g. start/stop'
+    required: true
+    default: 'start'
+  checkpointname:
+    description: 'Checkpoint name'
+    required: false
+    default: ''
+  startvmwaittimebasedcheckinterval:
+    description: 'Waiting time interval for WaitTimeBasedCheck of StartVM'
+    required: false
+    default: '60'
+  startvmstatuschecktype:
+    description: 'Check type of StartVM '
+    required: false
+    default: 'HeartBeatApplicationsHealthy'
+  hyperv_startvmwaitingnumberofstatusnotifications:
+    description: 'Special parameter - Number of status check notifications'
+    required: false
+    default: '30'
+  hyperv_startvmapphealthyheartbeattimeout:
+    description: 'Special parameter - Heartbeat Timeout for VM AppHealth check '
+    required: false
+    default: '300'
+  hyperv_psmoduleversion:
+    description: 'Special parameter - Use old ps module versions instead of latest to make it possible use old hyper-v versions'
+    required: false
+    default: ''
+  sshmode:
+    description: 'SSH mode enabled or disabled'
+    required: false
+    default: 'false'
+  sshusername:
+    description: 'SSH username'
+    required: false
+    default: ''
+  sshpassword:
+    description: 'SSH password'
+    required: false
+    default: ''
+  sshprivateKey:
+    description: 'SSH privatekey'
+    required: false
+    default: ''
+  sshhostname:
+    description: 'SSH Host, IP or DNS Name'
+    required: false
+    default: '' 
+  sshport:
+    description: 'SSH Port'
+    required: false
+    default: '22'  
+runs:
+  using: 'node16'
+  main: 'dist/index.js'

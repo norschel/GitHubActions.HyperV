@@ -1,0 +1,26 @@
+{
+  "name": "gha_hyperv",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@actions/core": "^1.6.0",
+    "@actions/github": "^5.0.0",
+    "@rauschma/stringio": "^1.4.0",
+    "child-shell": "^5.0.0",
+    "edge": "^7.10.1",
+    "edge-ps": "^0.1.0-pre",
+    "node-powershell": "^5.0.1",
+    "ssh2": "^1.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.21",
+    "@types/ssh2": "^0.5.52"
+  }
+}
