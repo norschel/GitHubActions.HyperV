@@ -1,5 +1,6 @@
 name: 'Hyper-V'
 description: 'Remote control hyper-v virtual machines without SCVMM'
+icon: server
 inputs:
   vmname:
     description: 'VM name'
