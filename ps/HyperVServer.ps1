@@ -201,7 +201,7 @@ function Get-VMExists {
 		}
 	}
 	$notExistingVM = $notExistingVM.Trim;
-	
+
 	if ($notExistingVM.Count -gt 0) {
 		Write-Error "The task found some non existing VM names. Please check VMs $notExistingVM on host $hostname.";
 		#throw "The task found some non existing VM names. Please check VMs $notExistingVM on host $hostname.";
@@ -580,7 +580,7 @@ function Stop-VMByTurningOffVM {
 				else {
 					write-output "VM $($vm.Name) is already turned off."
 				}
-			}		
+			}
 		}
 		<# Post-impact code #>
 	}
