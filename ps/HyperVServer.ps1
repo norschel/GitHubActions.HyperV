@@ -18,7 +18,7 @@ param(
 	[int]$HyperV_StartVMAppHealthyHeartbeatTimeout,
 	[parameter(Mandatory = $false)]
 	[string]$HyperV_PsModuleVersion)
-		
+
 [string]$ConfirmPreference = "None"
 
 $timeBasedStatusWaitInterval = $StartVMWaitTimeBasedCheckInterval;
@@ -30,7 +30,7 @@ $hyperVPsModuleVersion = $HyperV_PsModuleVersion;
 $Action = $Action.ToLowerInvariant();
 
 function Get-HyperVCmdletsAvailable {
-	Write-Host "Check if Hyper-V PowerShell management commandlets are installed."
+	write-output "Check if Hyper-V PowerShell management commandlets are installed."
 
 	$hyperVCommands = (
 		('GET-VM'),
@@ -46,20 +46,20 @@ function Get-HyperVCmdletsAvailable {
 
 	foreach ($cmdName in $hyperVCommands) {
 		if (!(Get-Command $cmdName -errorAction SilentlyContinue)) {
-			write-host -ForegroundColor Yellow "Windows feature ""Microsoft-Hyper-V-Management-PowerShell"" is not installed on the build agent."
-			write-host -ForegroundColor Yellow "Please install ""Microsoft-Hyper-V-Management-PowerShell"" by using an Administrator account"
-			write-host -ForegroundColor Yellow "You can use PowerShell with the following command to install the missing components:"
-			write-host -ForegroundColor Green "Enable-WindowsOptionalFeature –FeatureName Microsoft-Hyper-V-Management-PowerShell,Microsoft-Hyper-V-Management-Clients –Online -All"
+			write-output -ForegroundColor Yellow "Windows feature ""Microsoft-Hyper-V-Management-PowerShell"" is not installed on the build agent."
+			write-output -ForegroundColor Yellow "Please install ""Microsoft-Hyper-V-Management-PowerShell"" by using an Administrator account"
+			write-output -ForegroundColor Yellow "You can use PowerShell with the following command to install the missing components:"
+			write-output -ForegroundColor Green "Enable-WindowsOptionalFeature –FeatureName Microsoft-Hyper-V-Management-PowerShell,Microsoft-Hyper-V-Management-Clients –Online -All"
 
 			#throw "Microsoft-Hyper-V-Management-PowerShell are not installed."
-			Write-Error 
+			Write-Error
 			exit 1
 
 			return
 		}
 	}
 
-	Write-Host "Microsoft-Hyper-V-Management-PowerShell are installed."
+	write-output "Microsoft-Hyper-V-Management-PowerShell are installed."
 
 }
 
@@ -102,13 +102,13 @@ function Set-HyperVCmdletCacheDisabled {
 			# Variable scope ensures that parent session remains unchanged
 			$ConfirmPreference = 'None'
 
-			write-host "Disable Hyper-V cmdlet caching."
+			write-output "Disable Hyper-V cmdlet caching."
 			if ($hyperVPsModuleVersion -eq "1.0" -or $hyperVPsModuleVersion -eq "1.1") {
 				Disable-VMEventing -force
-			} 
+			}
 			else {
 				Disable-VMEventing -ComputerName $Computername -force
-			}		
+			}
 		}
 	}
 
@@ -152,7 +152,7 @@ function Set-HyperVCmdletCacheEnabled {
 			# Variable scope ensures that parent session remains unchanged
 			$ConfirmPreference = 'None'
 
-			write-host "(Re-)Enable Hyper-V cmdlet caching."
+			write-output "(Re-)Enable Hyper-V cmdlet caching."
 			if ($hyperVPsModuleVersion -eq "1.0" -or $hyperVPsModuleVersion -eq "1.1") {
 				Enable-VMEventing -force
 			}
@@ -168,19 +168,19 @@ function Set-HyperVCmdletCacheEnabled {
 }
 
 function Get-ParameterOverview {
-	write-host "Action is $Action.";
-	write-host "Assigned VM name(s) are $VMName.";
-	write-host "Assigned Hyper-V server host is $Computername.";
+	write-output "Action is $Action.";
+	write-output "Assigned VM name(s) are $VMName.";
+	write-output "Assigned Hyper-V server host is $Computername.";
 
 	if ($Action -eq "StartVM") {
-		write-host "Status check type: $statusCheckType";
+		write-output "Status check type: $statusCheckType";
 		if ($statusCheckType -eq "WaitingTime") {
-			write-host "Waiting time interval (in sec): $timeBasedStatusWaitInterval"
+			write-output "Waiting time interval (in sec): $timeBasedStatusWaitInterval"
 		}
 	}
 
 	if ($CheckpointName) {
-		write-host "Assigned checkpoint name is $CheckpointName.";
+		write-output "Assigned checkpoint name is $CheckpointName.";
 	}
 }
 
@@ -189,7 +189,7 @@ function Get-VMExists {
 	[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Scope = "Function", Target = "*")]
 	param([System.Collections.ArrayList]$vmnames, [string]$hostname)
 
-	write-host "Checking if all configured VMs are found on host $hostname";
+	write-output "Checking if all configured VMs are found on host $hostname";
 
 	$nonExistingVMs;
 	for ($i = 0; $i -lt $vmnames.Count; $i++) {
@@ -198,19 +198,19 @@ function Get-VMExists {
 		$vm = Get-VM -Name $vmname -Computername $hostname
 		if ($null -eq $vm) {
 			Write-Error "VM $vmname doesn't exist on Hyper-V server $hostname"
-			$notExistingVM += " $vmname"
 		}
 	}
 	$notExistingVM = $notExistingVM.Trim;
-
+	
 	if ($notExistingVM.Count -gt 0) {
 		Write-Error "The task found some non existing VM names. Please check VMs $notExistingVM on host $hostname.";
 		#throw "The task found some non existing VM names. Please check VMs $notExistingVM on host $hostname.";
 		Write-Error "The task found some non existing VM names. Please check VMs $notExistingVM on host $hostname.";
 		exit 1;
 	}
+	$notExistingVM += " $vmname"
 
-	Write-Host "All configured VMs are found on host $hostname";
+	write-output "All configured VMs are found on host $hostname";
 }
 
 function Get-VMNamesFromVMNameParameter {
@@ -223,12 +223,12 @@ function Get-VMNamesFromVMNameParameter {
 	if ($VMName.Contains(",")) {
 		$tempNames = New-Object System.Collections.ArrayList;
 		$splittedNames = $VMName.Split(",");
+		$vmNames = $tempNames;
 
 		for ($i = 0; $i -lt $splittedNames.Count; $i++) {
 			$tempNames.Add($splittedNames[$i].Trim()) | Out-Null
 		}
 
-		$vmNames = $tempNames;
 	}
 	else {
 		# https://stackoverflow.com/questions/28034605/arraylist-prints-numbers
@@ -290,11 +290,11 @@ function Start-HyperVVM {
 
 				$vm = Get-VM -Name $vmname -Computername $hostname
 				if ($vm.Heartbeat -ne "OkApplicationsHealthy") {
-					Write-Host "Starting VM $vmname on host $hostname";
+					write-output "Starting VM $vmname on host $hostname";
 					Start-VM -VMName $vmname -Computername $hostname -ErrorAction Stop
 				}
 				else {
-					Write-Host "VM $vmname on host $hostname is already started";
+					write-output "VM $vmname on host $hostname is already started";
 				}
 			}
 			<# Post-impact code #>
@@ -309,7 +309,7 @@ function Start-HyperVVM {
 function Get-ApplicationsHealthyStatusOfStartHyperVVM {
 	param($vmnames, $hostname)
 
-	write-host "Waiting until all VM(s) have been started (using ApplicationHealthy status)."
+	write-output "Waiting until all VM(s) have been started (using ApplicationHealthy status)."
 
 	$finishedVMs = New-Object System.Collections.ArrayList;
 
@@ -321,18 +321,18 @@ function Get-ApplicationsHealthyStatusOfStartHyperVVM {
 			$vm = Get-VM -Name $vmname -Computername $hostname
 
 			if ($vm.Status -match "Starting") {
-				Write-Host "VM $vmname on host $hostname is still in status Starting"
+				write-output "VM $vmname on host $hostname is still in status Starting"
 			}
 			else {
 				$finishedVMs.Add($vmname) | Out-Null
-				write-host "VM $vmname is now ready."
+				write-output "VM $vmname is now ready."
 			}
 
 			# After we reached the last vm in the parameter list we need to decide about the next steps
 			if ($vmnames.Count -ne $finishedVMs.Count) {
 				$workInProgress = $true;
 				Start-Sleep -Seconds 5
-				write-host "Checking status again in 5 sec."
+				write-output "Checking status again in 5 sec."
 			}
 			else {
 				$workInProgress = $false;
@@ -345,13 +345,13 @@ function Get-ApplicationsHealthyStatusOfStartHyperVVM {
 		for ($i = 0; $i -lt $vmnames.Count; $i++) {
 			$circuitBreaker = $false;
 			$vm = Get-VM -Name $vmname -Computername $hostname
-			write-host "Waiting until VM $vmname heartbeat state is ""Application healthy""."
+			write-output "Waiting until VM $vmname heartbeat state is ""Application healthy""."
 
 			# backup for future -and $vm.Heartbeat -ne "OkApplicationsUnknown"
 			# hyper-v show unkown in case the hyper-v extensions are not uptodate
 			while ($vm.Heartbeat -ne "OkApplicationsHealthy" -and !$circuitBreaker) {
 				Start-Sleep -Seconds 5
-				write-host "Checking status again in 5 sec."
+				write-output "Checking status again in 5 sec."
 				$vm = Get-VM -Name $vmname -Computername $hostname
 				$heartbeatTimeout = $appHealthyHeartbeatTimeout;
 
@@ -359,10 +359,10 @@ function Get-ApplicationsHealthyStatusOfStartHyperVVM {
 					Write-Verbose "Assigning default value to heartbeat timeout because it is $heartbeatTimeout";
 					# If the Heartbeat Timeout is set we stay at the default of 5 minutes.
 					$heartbeatTimeout = 5 * 60;
-					Write-Host "Default heartbeat timeout is $heartbeatTimeout";
-				}	
+					write-output "Default heartbeat timeout is $heartbeatTimeout";
+				}
 				else {
-					Write-Host "Assigning custom value to heartbeat timeout $heartbeatTimeout"
+					write-output "Assigning custom value to heartbeat timeout $heartbeatTimeout"
 				}
 
 
@@ -385,17 +385,17 @@ function Get-ApplicationsHealthyStatusOfStartHyperVVM {
 			}
 
 			$workInProgress = $false;
-			write-host "The VM $vmname has been started.";
+			write-output "The VM $vmname has been started.";
 		}
 	}
 
-	write-host "All VM(s) have been started."
+	write-output "All VM(s) have been started."
 }
 
 function Get-TimeBasedStatusOfStartHyperVVM {
 	param($vmnames, $hostname)
 
-	write-host "Waiting until all VM(s) have been started (using TimeBased check)."
+	write-output "Waiting until all VM(s) have been started (using TimeBased check)."
 	$finishedVMs = New-Object System.Collections.ArrayList;
 
 	$workInProgress = $true;
@@ -406,31 +406,31 @@ function Get-TimeBasedStatusOfStartHyperVVM {
 			$vm = Get-VM -Name $vmname -Computername $hostname
 
 			if ($vm.Status -match "Starting") {
-				Write-Host "VM $vmname on host $hostname is still in status Starting"
+				write-output "VM $vmname on host $hostname is still in status Starting"
 			}
 			else {
 				$finishedVMs.Add($vmname) | Out-Null
-				write-host "VM $vmname is now ready."
+				write-output "VM $vmname is now ready."
 			}
 
 			# After we reached the last vm in the parameter list we need to decide about the next steps
 			if ($vmnames.Count -lt $finishedVMs.Count) {
 				$workInProgress = $true;
 				Start-Sleep -Seconds 5
-				write-host "Checking status again in 5 sec."
+				write-output "Checking status again in 5 sec."
 			}
 			else {
 				$workInProgress = $false;
 			}
 		}
 	}
-	
+
 	if ($null -eq $waitingTimeNumberOfStatusNotifications -or 0 -eq $waitingTimeNumberOfStatusNotifications) {
 		Write-Verbose "Assigning default value to Waiting time status notifications $waitingTimeNumberOfStatusNotifications";
 		$waitingTimeNumberOfStatusNotifications = 30;
 	}
 	else {
-		Write-Host "Assigning custom value to Waiting time status notifications $waitingTimeNumberOfStatusNotifications";
+		write-output "Assigning custom value to Waiting time status notifications $waitingTimeNumberOfStatusNotifications";
 	}
 
 	[int]$waitingInterval = ($timeBasedStatusWaitInterval / 30);
@@ -439,9 +439,9 @@ function Get-TimeBasedStatusOfStartHyperVVM {
 		Start-Sleep -Seconds $waitingInterval
 		$timeBasedStatusWaitIntervalLeft = $timeBasedStatusWaitInterval - $i * $waitingInterval;
 
-		write-host "Waiting interval is reached in $timeBasedStatusWaitIntervalLeft sec."
+		write-output "Waiting interval is reached in $timeBasedStatusWaitIntervalLeft sec."
 	}
-	write-host "Waiting interval $timeBasedStatusWaitInterval seconds reached. We go on ..."
+	write-output "Waiting interval $timeBasedStatusWaitInterval seconds reached. We go on ..."
 }
 
 function Get-StatusOfStartHyperVVM {
@@ -450,7 +450,7 @@ function Get-StatusOfStartHyperVVM {
 	switch ($statusCheckType) {
 		"WaitingTime" { Get-TimeBasedStatusOfStartHyperVVM -vmnames $vmNames -hostname $hostName }
 		"HeartBeatApplicationsHealthy" { Get-ApplicationsHealthyStatusOfStartHyperVVM -vmnames $vmNames -hostname $hostName }
-		default { write-host "No check for StartVM configured." }
+		default { write-output "No check for StartVM configured." }
 	}
 }
 
@@ -497,7 +497,7 @@ function Stop-VMUnfriendly {
 			$id = (
 				get-vm -ComputerName $hostname | Where-Object { $_.name -eq "$vmname" } | Select-Object id).id.guid
 			If ($id) {
-				write-host "VM GUID found: $id"
+				write-output "VM GUID found: $id"
 			}
 			Else {
 				write-warning "VM or GUID not found for VM: $vmname.";
@@ -511,7 +511,7 @@ function Stop-VMUnfriendly {
 				stop-process $vm_pid -Force
 			}
 			Else {
-				write-host "No VM worker process found for VM: $vmname"
+				write-output "No VM worker process found for VM: $vmname"
 			}
 
 		}
@@ -562,12 +562,12 @@ function Stop-VMByTurningOffVM {
 			Write-Verbose ('[{0}] Reached command' -f $MyInvocation.MyCommand)
 			# Variable scope ensures that parent session remains unchanged
 			$ConfirmPreference = 'None'
-			
+
 			for ($i = 0; $i -lt $vmnames.Count; $i++) {
 				$vmname = $vmnames[$i];
 				$vm = Get-VM -Name $vmname -Computername $hostname
 				if ($vm.State -ne "Off") {
-					write-host "Direct turning off the VM $vmname (no regular gracefull shutdown)."
+					write-output "Direct turning off the VM $vmname (no regular gracefull shutdown)."
 					write-debug "Current VM $vmname state: $($vm.State)"
 					write-debug "Current VM $vmname status: $($vm.Status)"
 
@@ -575,12 +575,12 @@ function Stop-VMByTurningOffVM {
 					Start-Sleep -Seconds 5
 					write-debug "Current VM $vmname state: $($vm.State)"
 					write-debug "Current VM $vmname status: $($vm.Status)"
-					Write-Host "VM $vmname on $hostname is now turned off."
+					write-output "VM $vmname on $hostname is now turned off."
 				}
 				else {
-					Write-Host "VM $($vm.Name) is already turned off."
+					write-output "VM $($vm.Name) is already turned off."
 				}
-			}			
+			}		
 		}
 		<# Post-impact code #>
 	}
@@ -636,13 +636,13 @@ function Start-HyperVVMShutdown {
 				$vm = Get-VM -Name $vmname -Computername $hostname
 
 				if ($vm.State -ne "Off") {
-					Write-Host "Shutting down VM $vmname on $hostname started."
+					write-output "Shutting down VM $vmname on $hostname started."
 					$vm = Get-VM -Name $vmname -Computername $hostname
 
 					Stop-VM -Name $vmname -ComputerName $hostname -Force -ErrorAction Stop
 				}
 				else {
-					Write-Host "VM $vmname on $hostname is already turned off."
+					write-output "VM $vmname on $hostname is already turned off."
 				}
 			}
 		}
@@ -656,7 +656,7 @@ function Start-HyperVVMShutdown {
 }
 
 function Get-StatusOfShutdownVM {
-	write-host "Waiting until all VM(s) has been shutted down."
+	write-output "Waiting until all VM(s) has been shutted down."
 
 	$finishedVMs = New-Object System.Collections.ArrayList;
 
@@ -666,12 +666,12 @@ function Get-StatusOfShutdownVM {
 	while ($workInProgress) {
 		for ($i = 0; $i -lt $vmnames.Count; $i++) {
 			$vmname = $vmnames[$i];
-			write-host "Waiting until VM $vmname state is ""Off""."
+			write-output "Waiting until VM $vmname state is ""Off""."
 			$vm = Get-VM -Name $vmname -Computername $hostname
 
 			if ($vm.State -eq 'Off') {
 				$finishedVMs.Add($vmname) | Out-Null
-				write-host "VM $vmname is turned off."
+				write-output "VM $vmname is turned off."
 			}
 		}
 
@@ -687,15 +687,15 @@ function Get-StatusOfShutdownVM {
 
 			Start-Sleep -Seconds 10
 			$finishedVMs.Clear();
-			write-host "Checking status again in 10 sec."
+			write-output "Checking status again in 10 sec."
 		}
 		else {
-			write-host "All configured VMs have been shut down."
+			write-output "All configured VMs have been shut down."
 			$workInProgress = $false;
 		}
 	}
 
-	write-host "All VM(s) have been shutted down."
+	write-output "All VM(s) have been shutted down."
 }
 
 function Start-TurnOfVM {
@@ -739,7 +739,6 @@ function Start-TurnOfVM {
 
 			Stop-VMByTurningOffVM -vmnames $vmnames -hostname $hostname -Confirm:$false
 		}
-	
 		<# Post-impact code #>
 	}
 
@@ -799,7 +798,7 @@ function New-HyperVCheckpoint {
 					exit 1
 				}
 
-				write-host "Creating checkpoint $CheckpointName for VM $vmname on host $hostname"
+				write-output "Creating checkpoint $CheckpointName for VM $vmname on host $hostname"
 				Checkpoint-VM -Name $vmname -ComputerName $hostname -CheckpointName $CheckpointName -ErrorAction Stop
 			}
 
@@ -816,7 +815,7 @@ function New-HyperVCheckpoint {
 function Get-StatusOfNewHyperVCheckpoint {
 	param($vmnames, $hostname)
 
-	write-host "Waiting until checkpoint for all VM(s) has been created."
+	write-output "Waiting until checkpoint for all VM(s) has been created."
 
 	$finishedVMs = New-Object System.Collections.ArrayList;
 
@@ -824,21 +823,21 @@ function Get-StatusOfNewHyperVCheckpoint {
 	while ($workInProgress) {
 		for ($i = 0; $i -lt $vmnames.Count; $i++) {
 			$vmname = $vmnames[$i];
-			write-host "Waiting until VM $vmname checkpoint state is not ""Creating""."
+			write-output "Waiting until VM $vmname checkpoint state is not ""Creating""."
 			$vm = Get-VM -Name $vmname -Computername $hostname
 
 			if ($vm.Status -match "Creating") {
-				write-host "Creating a checkpoint on VM $vmname on host $hostname is still in progress"
+				write-output "Creating a checkpoint on VM $vmname on host $hostname is still in progress"
 			}
 			else {
 				$finishedVMs.Add($vmname) | Out-Null
-				write-host "Checkpoint $CheckpointName for the VM $vmname on host $hostname has been created.";
+				write-output "Checkpoint $CheckpointName for the VM $vmname on host $hostname has been created.";
 			}
 
 			if ($vmnames.Count -ne $finishedVMs.Count) {
 				$workInProgress = $true;
 				Start-Sleep -Seconds 5
-				write-host "Checking status again in 5 sec."
+				write-output "Checking status again in 5 sec."
 			}
 			else {
 				$workInProgress = $false;
@@ -846,7 +845,7 @@ function Get-StatusOfNewHyperVCheckpoint {
 		}
 	}
 
-	write-host "checkpoints for all VM(s) have been created."
+	write-output "checkpoints for all VM(s) have been created."
 }
 
 function Restore-HyperVCheckpoint {
@@ -899,7 +898,7 @@ function Restore-HyperVCheckpoint {
 					exit 1
 				}
 
-				write-host "Restoring checkpoint $CheckpointName for VM $vmname on host $hostname have been started."
+				write-output "Restoring checkpoint $CheckpointName for VM $vmname on host $hostname have been started."
 				Restore-VMcheckpoint -VMName $vmname -ComputerName $hostname -Name $CheckpointName -Confirm:$false -ErrorAction Stop
 			}
 		}
@@ -914,7 +913,7 @@ function Restore-HyperVCheckpoint {
 function Get-StatusOfRestoreHyperVCheckpoint {
 	param($vmnames, $hostname)
 
-	write-host "Waiting until restoring checkpoint has been finished for all VM(s)."
+	write-output "Waiting until restoring checkpoint has been finished for all VM(s)."
 
 	$finishedVMs = new-object System.collections.arraylist;
 
@@ -922,21 +921,21 @@ function Get-StatusOfRestoreHyperVCheckpoint {
 	while ($workInProgress) {
 		for ($i = 0; $i -lt $vmnames.Count; $i++) {
 			$vmname = $vmnames[$i];
-			write-host "Waiting until VM $vmname state is not ""Applying""."
+			write-output "Waiting until VM $vmname state is not ""Applying""."
 			$vm = Get-VM -Name $vmname -Computername $hostname
 
 			if ($vm.Status -match "Applying") {
-				write-host "Restoring checkpoint for VM $vmname on host $hostname is still in progress.";
+				write-output "Restoring checkpoint for VM $vmname on host $hostname is still in progress.";
 			}
 			else {
 				$finishedVMs.Add($vmname) | Out-Null
-				write-host "Checkpoint $CheckpointName for the VM $vmname has been restored.";
+				write-output "Checkpoint $CheckpointName for the VM $vmname has been restored.";
 			}
 
 			if ($vmnames.Count -ne $finishedVMs.Count) {
 				$workInProgress = $true;
 				Start-Sleep -Seconds 5
-				write-host "Checking status again in 5 sec."
+				write-output "Checking status again in 5 sec."
 			}
 			else {
 				$workInProgress = $false;
@@ -944,7 +943,7 @@ function Get-StatusOfRestoreHyperVCheckpoint {
 		}
 	}
 
-	write-host "Restoring checkpoints has been finished for all VM(s)."
+	write-output "Restoring checkpoints has been finished for all VM(s)."
 }
 
 function Remove-HyperVCheckpoint {
@@ -997,7 +996,7 @@ function Remove-HyperVCheckpoint {
 					exit 1
 				}
 
-				write-host "Removing checkpoint $CheckpointName for VM $vmname on host $hostname have been started."
+				write-output "Removing checkpoint $CheckpointName for VM $vmname on host $hostname have been started."
 				Remove-VMCheckpoint -VMName $vmname -ComputerName $hostname -Name $CheckpointName -Confirm:$false -ErrorAction Stop
 			}
 		}
@@ -1013,7 +1012,7 @@ function Remove-HyperVCheckpoint {
 function Get-StatusOfRemoveHyperVCheckpoint {
 	param($vmnames, $hostname)
 
-	write-host "Waiting until removing checkpoint has been finished for all VM(s)."
+	write-output "Waiting until removing checkpoint has been finished for all VM(s)."
 
 	$finishedVMs = new-object System.collections.arraylist;
 
@@ -1021,21 +1020,21 @@ function Get-StatusOfRemoveHyperVCheckpoint {
 	while ($workInProgress) {
 		for ($i = 0; $i -lt $vmnames.Count; $i++) {
 			$vmname = $vmnames[$i];
-			write-host "Waiting until VM $vmname state is not ""Merging""."
+			write-output "Waiting until VM $vmname state is not ""Merging""."
 			$vm = Get-VM -Name $vmname -Computername $hostname
 
 			if ($vm.Status -match "Merge") {
-				write-host "Removing checkpoint $CheckpointName for VM $vmname on host $hostname is still in progress.";
+				write-output "Removing checkpoint $CheckpointName for VM $vmname on host $hostname is still in progress.";
 			}
 			else {
 				$finishedVMs.Add($vmname) | Out-Null
-				write-host "Checkpoint $CheckpointName for the VM $vmname has been removed.";
+				write-output "Checkpoint $CheckpointName for the VM $vmname has been removed.";
 			}
 
 			if ($vmnames.Count -ne $finishedVMs.Count) {
 				$workInProgress = $true;
 				Start-Sleep -Seconds 5
-				write-host "Checking status again in 5 sec."
+				write-output "Checking status again in 5 sec."
 			}
 			else {
 				$workInProgress = $false;
@@ -1043,7 +1042,7 @@ function Get-StatusOfRemoveHyperVCheckpoint {
 		}
 	}
 
-	write-host "Removing checkpoint has been finished for all VM(s)."
+	write-output "Removing checkpoint has been finished for all VM(s)."
 }
 #endregion
 
@@ -1054,7 +1053,7 @@ Try {
 		$availableModules = Get-Module hyper-v -ListAvailable
 		Write-Debug ($availableModules | Format-Table | Out-String)
 
-		Write-Host "Loading Hyper-V PowerShell module version $hyperVPsModuleVersion";
+		write-output "Loading Hyper-V PowerShell module version $hyperVPsModuleVersion";
 		Import-Module –Name Hyper-V -RequiredVersion $hyperVPsModuleVersion -Force -Global;
 
 		# in case something it not working as expected we want to know which modules are loaded
@@ -1062,7 +1061,7 @@ Try {
 		Write-Debug ($checkLoadedModules | Format-Table | Out-String)
 	}
 	else {
-		Write-Host "Loading Hyper-V system default PowerShell module"
+		write-output "Loading Hyper-V system default PowerShell module"
 	}
 
 	Get-HyperVCmdletsAvailable
