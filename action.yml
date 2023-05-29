@@ -1,6 +1,9 @@
 name: 'Norschel Hyper-V Action'
 description: 'Remote control hyper-v virtual machines without SCVMM'
-icon: server
+author: Nico Orschel
+branding:
+  icon: 'server'
+  color: 'orange'
 inputs:
   vmname:
     description: 'VM name'
