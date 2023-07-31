@@ -165,6 +165,7 @@ const os_1 = __nccwpck_require__(2037);
 const PowerShellSshClient_1 = __nccwpck_require__(9431);
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
+        (0, core_1.startGroup)("Hyper-V action general information");
         console.log(`Starting the HyperV action on Hyper-V host ${os_1.hostname} using the plattform ${(0, os_1.platform)()}`);
         var isSshModeEnabledString = (0, core_1.getInput)("SSHMode", { required: false, trimWhitespace: true });
         var isSshModeEnabled = getBoolean(isSshModeEnabledString);
@@ -185,6 +186,7 @@ function executeInPowerShellRemoteMode() {
             console.log("Starting executing PowerShell commands.");
             var hyperVCmd = String.prototype.concat(".\\ps\\HyperVServer.ps1");
             hyperVCmd += String.prototype.concat(createHyperVScriptCommand());
+            (0, core_1.endGroup)();
             const pwshHyperV = (0, child_process_1.spawn)("powershell.exe", [hyperVCmd], {
                 stdio: "inherit",
             });
@@ -249,6 +251,7 @@ function createHyperVScriptCommand() {
     hyperVCmd += String.prototype.concat(" ", "-Action", " ", action);
     hyperVCmd += String.prototype.concat(" ", "-VMName", " ", vmName);
     hyperVCmd += String.prototype.concat(optionalParameters);
+    (0, core_1.debug)("### HyperV command script parameter: " + hyperVCmd);
     return hyperVCmd;
 }
 function executeInSSHMode() {
@@ -281,10 +284,11 @@ function executeInSSHMode() {
             });
         }
         var scriptArguments = createHyperVScriptCommand();
-        console.log("### Script arguments: " + scriptArguments);
+        (0, core_1.endGroup)();
         try {
             var result = yield ssh.executeScript('./ps/HyperVServer.ps1', scriptArguments);
             result = result.trim();
+            (0, core_1.debug)("### Result: " + result);
             console.log("### Done");
         }
         catch (error) {
