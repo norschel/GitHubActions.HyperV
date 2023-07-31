@@ -20,7 +20,7 @@ param(
 	[string]$HyperV_PsModuleVersion)
 
 [string]$ConfirmPreference = "None"
-import-module .\Logging.ps1 -Force
+import-module .\ps\Logging.ps1
 
 $timeBasedStatusWaitInterval = $StartVMWaitTimeBasedCheckInterval;
 $statusCheckType = $StartVMStatusCheckType;
@@ -31,7 +31,7 @@ $hyperVPsModuleVersion = $HyperV_PsModuleVersion;
 $Action = $Action.ToLowerInvariant();
 
 function Get-HyperVCmdletsAvailable {
-	write-LogNotice "Check if Hyper-V PowerShell management commandlets are installed."
+	write-LogInfo("Check if Hyper-V PowerShell management commandlets are installed.")
 
 	$hyperVCommands = (
 		('GET-VM'),
@@ -47,20 +47,20 @@ function Get-HyperVCmdletsAvailable {
 
 	foreach ($cmdName in $hyperVCommands) {
 		if (!(Get-Command $cmdName -errorAction SilentlyContinue)) {
-			write-LogNotice "Windows feature ""Microsoft-Hyper-V-Management-PowerShell"" is not installed on the build agent."
-			write-LogNotice "Please install ""Microsoft-Hyper-V-Management-PowerShell"" by using an Administrator account"
-			write-LogNotice "You can use PowerShell with the following command to install the missing components:"
-			write-LogNotice "Enable-WindowsOptionalFeature –FeatureName Microsoft-Hyper-V-Management-PowerShell,Microsoft-Hyper-V-Management-Clients –Online -All"
+			write-LogNotice("Windows feature ""Microsoft-Hyper-V-Management-PowerShell"" is not installed on the build agent.")
+			write-LogNotice("Please install ""Microsoft-Hyper-V-Management-PowerShell"" by using an Administrator account")
+			write-LogNotice("You can use PowerShell with the following command to install the missing components:")
+			write-LogNotice("Enable-WindowsOptionalFeature –FeatureName Microsoft-Hyper-V-Management-PowerShell,Microsoft-Hyper-V-Management-Clients –Online -All")
 
 			#throw "Microsoft-Hyper-V-Management-PowerShell are not installed."
-			write-LogError "Microsoft-Hyper-V-Management-PowerShell are not installed."
+			write-LogError("Microsoft-Hyper-V-Management-PowerShell are not installed.")
 			exit 1
 
 			return
 		}
 	}
 
-	write-LogInfo "Microsoft-Hyper-V-Management-PowerShell are installed."
+	write-LogInfo("Microsoft-Hyper-V-Management-PowerShell are installed.")
 
 }
 
@@ -90,7 +90,7 @@ function Set-HyperVCmdletCacheDisabled {
 		if (-not $PSBoundParameters.ContainsKey('WhatIf')) {
 			$WhatIfPreference = $PSCmdlet.SessionState.PSVariable.GetValue('WhatIfPreference')
 		}
-		write-LogDebug ('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
+		write-LogDebug('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
 	}
 
 	process {
@@ -99,11 +99,11 @@ function Set-HyperVCmdletCacheDisabled {
 		# -Confirm --> $ConfirmPreference = 'Low'
 		# ShouldProcess intercepts WhatIf* --> no need to pass it on
 		if ($Force -or $PSCmdlet.ShouldProcess("ShouldProcess?")) {
-			write-LogDebug ('[{0}] Reached command' -f $MyInvocation.MyCommand)
+			write-LogDebug('[{0}] Reached command' -f $MyInvocation.MyCommand)
 			# Variable scope ensures that parent session remains unchanged
 			$ConfirmPreference = 'None'
 
-			write-LogInfo "Disable Hyper-V cmdlet caching."
+			write-LogInfo("Disable Hyper-V cmdlet caching.")
 			if ($hyperVPsModuleVersion -eq "1.0" -or $hyperVPsModuleVersion -eq "1.1") {
 				Disable-VMEventing -force
 			}
@@ -114,7 +114,7 @@ function Set-HyperVCmdletCacheDisabled {
 	}
 
 	End {
-		write-LogDebug ('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
+		write-LogDebug('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
 	}
 }
 
@@ -140,7 +140,7 @@ function Set-HyperVCmdletCacheEnabled {
 		if (-not $PSBoundParameters.ContainsKey('WhatIf')) {
 			$WhatIfPreference = $PSCmdlet.SessionState.PSVariable.GetValue('WhatIfPreference')
 		}
-		write-LogDebug ('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
+		write-LogDebug('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
 	}
 
 	Process {
@@ -149,11 +149,11 @@ function Set-HyperVCmdletCacheEnabled {
 		# -Confirm --> $ConfirmPreference = 'Low'
 		# ShouldProcess intercepts WhatIf* --> no need to pass it on
 		if ($Force -or $PSCmdlet.ShouldProcess("ShouldProcess?")) {
-			write-LogDebug ('[{0}] Reached command' -f $MyInvocation.MyCommand)
+			write-LogDebug('[{0}] Reached command' -f $MyInvocation.MyCommand)
 			# Variable scope ensures that parent session remains unchanged
 			$ConfirmPreference = 'None'
 
-			write-LogInfo "(Re-)Enable Hyper-V cmdlet caching."
+			write-LogInfo("(Re-)Enable Hyper-V cmdlet caching.")
 			if ($hyperVPsModuleVersion -eq "1.0" -or $hyperVPsModuleVersion -eq "1.1") {
 				Enable-VMEventing -force
 			}
@@ -164,24 +164,24 @@ function Set-HyperVCmdletCacheEnabled {
 	}
 
 	End {
-		write-LogDebug ('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
+		write-LogDebug('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
 	}
 }
 
 function Get-ParameterOverview {
-	write-LogInfo "Action is $Action.";
-	write-LogInfo "Assigned VM name(s) are $VMName.";
-	write-LogInfo "Assigned Hyper-V server host is $Computername.";
+	write-LogInfo("Action is $Action.");
+	write-LogInfo("Assigned VM name(s) are $VMName.");
+	write-LogInfo("Assigned Hyper-V server host is $Computername.");
 
 	if ($Action -eq "StartVM") {
-		write-LogInfo "Status check type: $statusCheckType";
+		write-LogInfo("Status check type: $statusCheckType");
 		if ($statusCheckType -eq "WaitingTime") {
-			write-LogInfo "Waiting time interval (in sec): $timeBasedStatusWaitInterval"
+			write-LogInfo("Waiting time interval (in sec): $timeBasedStatusWaitInterval")
 		}
 	}
 
 	if ($CheckpointName) {
-		write-LogInfo "Assigned checkpoint name is $CheckpointName.";
+		write-LogInfo("Assigned checkpoint name is $CheckpointName.");
 	}
 }
 
@@ -190,7 +190,7 @@ function Get-VMExists {
 	[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Scope = "Function", Target = "*")]
 	param([System.Collections.ArrayList]$vmnames, [string]$hostname)
 
-	write-LogInfo "Checking if all configured VMs are found on host $hostname";
+	write-LogInfo("Checking if all configured VMs are found on host $hostname");
 
 	$nonExistingVMs;
 	for ($i = 0; $i -lt $vmnames.Count; $i++) {
@@ -198,20 +198,20 @@ function Get-VMExists {
 
 		$vm = Get-VM -Name $vmname -Computername $hostname
 		if ($null -eq $vm) {
-			write-LogError "VM $vmname doesn't exist on Hyper-V server $hostname"
+			write-LogError("VM $vmname doesn't exist on Hyper-V server $hostname")
 		}
 	}
 	$notExistingVM = $notExistingVM.Trim;
 
 	if ($notExistingVM.Count -gt 0) {
-		write-LogError "The task found some non existing VM names. Please check VMs $notExistingVM on host $hostname.";
+		write-LogError("The task found some non existing VM names. Please check VMs $notExistingVM on host $hostname.");
 		#throw "The task found some non existing VM names. Please check VMs $notExistingVM on host $hostname.";
-		write-LogError "The task found some non existing VM names. Please check VMs $notExistingVM on host $hostname.";
+		write-LogError("The task found some non existing VM names. Please check VMs $notExistingVM on host $hostname.");
 		exit 1;
 	}
 	$notExistingVM += " $vmname"
 
-	write-LogInfo "All configured VMs are found on host $hostname";
+	write-LogInfo("All configured VMs are found on host $hostname");
 }
 
 function Get-VMNamesFromVMNameParameter {
@@ -237,7 +237,7 @@ function Get-VMNamesFromVMNameParameter {
 		$vmNames.Add($VMName) | Out-Null;
 	}
 
-	write-LogDebug "Found $($vmNames.Count) VM names in VMName parameter";
+	write-LogDebug("Found $($vmNames.Count) VM names in VMName parameter");
 
 	# , is a workaround for powershell issues with arraylist -> otherwise this object is converted to string
 	return , $vmNames;
@@ -273,7 +273,7 @@ function Start-HyperVVM {
 		if (-not $PSBoundParameters.ContainsKey('WhatIf')) {
 			$WhatIfPreference = $PSCmdlet.SessionState.PSVariable.GetValue('WhatIfPreference')
 		}
-		write-LogDebug ('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
+		write-LogDebug('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
 	}
 
 	Process {
@@ -282,7 +282,7 @@ function Start-HyperVVM {
 		# -Confirm --> $ConfirmPreference = 'Low'
 		# ShouldProcess intercepts WhatIf* --> no need to pass it on
 		if ($Force -or $PSCmdlet.ShouldProcess("ShouldProcess?")) {
-			write-LogDebug ('[{0}] Reached command' -f $MyInvocation.MyCommand)
+			write-LogDebug('[{0}] Reached command' -f $MyInvocation.MyCommand)
 			# Variable scope ensures that parent session remains unchanged
 			$ConfirmPreference = 'None'
 
@@ -291,11 +291,11 @@ function Start-HyperVVM {
 
 				$vm = Get-VM -Name $vmname -Computername $hostname
 				if ($vm.Heartbeat -ne "OkApplicationsHealthy") {
-					write-LogInfo "Starting VM $vmname on host $hostname";
+					write-LogInfo("Starting VM $vmname on host $hostname");
 					Start-VM -VMName $vmname -Computername $hostname -ErrorAction Stop
 				}
 				else {
-					write-LogInfo "VM $vmname on host $hostname is already started";
+					write-LogInfo("VM $vmname on host $hostname is already started");
 				}
 			}
 			<# Post-impact code #>
@@ -303,18 +303,18 @@ function Start-HyperVVM {
 	}
 
 	End {
-		write-LogDebug ('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
+		write-LogDebug('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
 	}
 }
 
 function Get-ApplicationsHealthyStatusOfStartHyperVVM {
 	param($vmnames, $hostname)
 
-	write-LogInfo "Waiting until all VM(s) have been started (using ApplicationHealthy status)."
+	write-LogInfo("Waiting until all VM(s) have been started (using ApplicationHealthy status).")
 
 	$finishedVMs = New-Object System.Collections.ArrayList;
-
 	$workInProgress = $true;
+ 	write-LogSectionStart("Status check messages");
 	while ($workInProgress) {
 		for ($i = 0; $i -lt $vmnames.Count; $i++) {
 			$vmname = $vmnames[$i];
@@ -322,81 +322,84 @@ function Get-ApplicationsHealthyStatusOfStartHyperVVM {
 			$vm = Get-VM -Name $vmname -Computername $hostname
 
 			if ($vm.Status -match "Starting") {
-				write-LogInfo "VM $vmname on host $hostname is still in status Starting"
+				write-LogInfo("VM $vmname on host $hostname is still in status Starting")
 			}
 			else {
 				$finishedVMs.Add($vmname) | Out-Null
-				write-LogInfo "VM $vmname is now ready."
+				write-LogInfo("VM $vmname is now ready.")
 			}
 
 			# After we reached the last vm in the parameter list we need to decide about the next steps
 			if ($vmnames.Count -ne $finishedVMs.Count) {
 				$workInProgress = $true;
 				Start-Sleep -Seconds 5
-				write-LogInfo "Checking status again in 5 sec."
+				write-LogInfo("Checking status again in 5 sec.")
 			}
 			else {
 				$workInProgress = $false;
 			}
 		}
 	}
+ 	write-LogSectionEnd("Status check messages");	
 
 	$workInProgress = $true;
 	while ($workInProgress) {
 		for ($i = 0; $i -lt $vmnames.Count; $i++) {
 			$circuitBreaker = $false;
 			$vm = Get-VM -Name $vmname -Computername $hostname
-			write-LogInfo "Waiting until VM $vmname heartbeat state is ""Application healthy""."
+			write-LogInfo("Waiting until VM $vmname heartbeat state is ""Application healthy"".")
 
 			# backup for future -and $vm.Heartbeat -ne "OkApplicationsUnknown"
 			# hyper-v show unkown in case the hyper-v extensions are not uptodate
+   			write-LogSectionStart("Status check messages");	
 			while ($vm.Heartbeat -ne "OkApplicationsHealthy" -and !$circuitBreaker) {
 				Start-Sleep -Seconds 5
-				write-LogInfo "Checking status again in 5 sec."
+				write-LogInfo("Checking status again in 5 sec.")
 				$vm = Get-VM -Name $vmname -Computername $hostname
 				$heartbeatTimeout = $appHealthyHeartbeatTimeout;
 
 				if ($null -eq $heartbeatTimeout -or $heartbeatTimeout -eq 0) {
-					write-LogDebug "Assigning default value to heartbeat timeout because it is $heartbeatTimeout";
+					write-LogDebug("Assigning default value to heartbeat timeout because it is $heartbeatTimeout");
 					# If the Heartbeat Timeout is set we stay at the default of 5 minutes.
 					$heartbeatTimeout = 5 * 60;
-					write-LogInfo "Default heartbeat timeout is $heartbeatTimeout";
+					write-LogInfo("Default heartbeat timeout is $heartbeatTimeout");
 				}
 				else {
-					write-LogInfo "Assigning custom value to heartbeat timeout $heartbeatTimeout"
+					write-LogInfo("Assigning custom value to heartbeat timeout $heartbeatTimeout")
 				}
 
 
 				if ($vm.State -eq "Running" -and $vm.Uptime.Seconds -gt $heartbeatTimeout) {
 					$circuitBreaker = $true;
-					write-LogWarning "Starting VM $vmname reached $heartbeatTimeout minute timeout limit";
-					write-LogWarning "Hyper-V heartbeat has not reported healthy state."
-					write-LogWarning "VM $vmname is in running state and the task finishs execution";
+					write-LogWarning("Starting VM $vmname reached $heartbeatTimeout minute timeout limit");
+					write-LogWarning("Hyper-V heartbeat has not reported healthy state.")
+					write-LogWarning("VM $vmname is in running state and the task finishs execution");
 					break;
 				}
 
 				if ($vm.State -ne "Running" -and $vm.Uptime.Seconds -gt $heartbeatTimeout) {
 					$circuitBreaker = $true;
-					write-LogWarning "Starting VM $vmname reached $heartbeatTimeout minute timeout limit";
-					write-LogWarning "Hyper-V heartbeat has not reported healthy state."
-					write-LogError "Abording starting VM $vmname because VM state is not running"
-					write-LogError "Please check logs on Hyper-V server and Build agent to find the root cause and fix any issues."
+					write-LogWarning("Starting VM $vmname reached $heartbeatTimeout minute timeout limit");
+					write-LogWarning("Hyper-V heartbeat has not reported healthy state.")
+					write-LogError("Abording starting VM $vmname because VM state is not running")
+					write-LogError("Please check logs on Hyper-V server and Build agent to find the root cause and fix any issues.")
 					continue
 				}
 			}
+   			write-LogSectionEnd("Status check messages");	
 
 			$workInProgress = $false;
-			write-LogInfo "The VM $vmname has been started.";
+			write-LogInfo("The VM $vmname has been started.");
 		}
 	}
 
-	write-LogInfo "All VM(s) have been started."
+	write-LogInfo("All VM(s) have been started.")
 }
 
 function Get-TimeBasedStatusOfStartHyperVVM {
 	param($vmnames, $hostname)
 
-	write-LogInfo "Waiting until all VM(s) have been started (using TimeBased check)."
+	write-LogInfo("Waiting until all VM(s) have been started (using TimeBased check).")
 	$finishedVMs = New-Object System.Collections.ArrayList;
 
 	$workInProgress = $true;
@@ -407,18 +410,18 @@ function Get-TimeBasedStatusOfStartHyperVVM {
 			$vm = Get-VM -Name $vmname -Computername $hostname
 
 			if ($vm.Status -match "Starting") {
-				write-LogInfo "VM $vmname on host $hostname is still in status Starting"
+				write-LogInfo("VM $vmname on host $hostname is still in status Starting")
 			}
 			else {
 				$finishedVMs.Add($vmname) | Out-Null
-				write-LogInfo "VM $vmname is now ready."
+				write-LogInfo("VM $vmname is now ready.")
 			}
 
 			# After we reached the last vm in the parameter list we need to decide about the next steps
 			if ($vmnames.Count -lt $finishedVMs.Count) {
 				$workInProgress = $true;
 				Start-Sleep -Seconds 5
-				write-LogInfo "Checking status again in 5 sec."
+				write-LogInfo("Checking status again in 5 sec.")
 			}
 			else {
 				$workInProgress = $false;
@@ -427,22 +430,24 @@ function Get-TimeBasedStatusOfStartHyperVVM {
 	}
 
 	if ($null -eq $waitingTimeNumberOfStatusNotifications -or 0 -eq $waitingTimeNumberOfStatusNotifications) {
-		write-LogDebug "Assigning default value to Waiting time status notifications $waitingTimeNumberOfStatusNotifications";
+		write-LogDebug("Assigning default value to Waiting time status notifications $waitingTimeNumberOfStatusNotifications");
 		$waitingTimeNumberOfStatusNotifications = 30;
 	}
 	else {
-		write-LogInfo "Assigning custom value to Waiting time status notifications $waitingTimeNumberOfStatusNotifications";
+		write-LogInfo("Assigning custom value to Waiting time status notifications $waitingTimeNumberOfStatusNotifications");
 	}
 
 	[int]$waitingInterval = ($timeBasedStatusWaitInterval / 30);
 
+	write-LogSectionStart("Status check messages");	
 	for ($i = 1; $i -le $waitingTimeNumberOfStatusNotifications; $i++) {
 		Start-Sleep -Seconds $waitingInterval
 		$timeBasedStatusWaitIntervalLeft = $timeBasedStatusWaitInterval - $i * $waitingInterval;
 
-		write-LogInfo "Waiting interval is reached in $timeBasedStatusWaitIntervalLeft sec."
+		write-LogInfo("Waiting interval is reached in $timeBasedStatusWaitIntervalLeft sec.")
 	}
-	write-LogInfo "Waiting interval $timeBasedStatusWaitInterval seconds reached. We go on ..."
+ 	write-LogSectionEnd("Status check messages");	
+	write-LogInfo("Waiting interval $timeBasedStatusWaitInterval seconds reached. We go on ...")
 }
 
 function Get-StatusOfStartHyperVVM {
@@ -451,7 +456,7 @@ function Get-StatusOfStartHyperVVM {
 	switch ($statusCheckType) {
 		"WaitingTime" { Get-TimeBasedStatusOfStartHyperVVM -vmnames $vmNames -hostname $hostName }
 		"HeartBeatApplicationsHealthy" { Get-ApplicationsHealthyStatusOfStartHyperVVM -vmnames $vmNames -hostname $hostName }
-		default { write-LogInfo "No check for StartVM configured." }
+		default { write-LogInfo("No check for StartVM configured.") }
 	}
 }
 
@@ -482,7 +487,7 @@ function Stop-VMUnfriendly {
 		if (-not $PSBoundParameters.ContainsKey('WhatIf')) {
 			$WhatIfPreference = $PSCmdlet.SessionState.PSVariable.GetValue('WhatIfPreference')
 		}
-		write-LogDebug ('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
+		write-LogDebug('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
 	}
 
 	Process {
@@ -491,37 +496,36 @@ function Stop-VMUnfriendly {
 		# -Confirm --> $ConfirmPreference = 'Low'
 		# ShouldProcess intercepts WhatIf* --> no need to pass it on
 		if ($Force -or $PSCmdlet.ShouldProcess("ShouldProcess?")) {
-			write-LogDebug ('[{0}] Reached command' -f $MyInvocation.MyCommand)
+			write-LogDebug('[{0}] Reached command' -f $MyInvocation.MyCommand)
 			# Variable scope ensures that parent session remains unchanged
 			$ConfirmPreference = 'None'
 
 			$id = (
 				get-vm -ComputerName $hostname | Where-Object { $_.name -eq "$vmname" } | Select-Object id).id.guid
 			If ($id) {
-				write-LogInfo "VM GUID found: $id"
+				write-LogInfo("VM GUID found: $id")
 			}
 			Else {
-				write-LogWarning "VM or GUID not found for VM: $vmname.";
+				write-LogWarning("VM or GUID not found for VM: $vmname.");
 				break
 			}
 
 			$vm_pid = (Get-CimInstance Win32_Process | Where-Object { $_.Name -match 'vmwp' -and $_.CommandLine -match $id }).ProcessId
 			If ($vm_pid) {
-				write-LogWarning "Found VM worker process id: $vm_pid"
-				write-LogWarning "Killing VM worker process of VM: $vmname"
+				write-LogWarning("Found VM worker process id: $vm_pid")
+				write-LogWarning("Killing VM worker process of VM: $vmname")
 				stop-process $vm_pid -Force
 			}
 			Else {
-				write-LogInfo "No VM worker process found for VM: $vmname"
+				write-LogInfo("No VM worker process found for VM: $vmname")
 			}
-
 		}
 
 		<# Post-impact code #>
 	}
 
 	End {
-		write-LogDebug ('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
+		write-LogDebug('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
 	}
 }
 
@@ -551,7 +555,7 @@ function Stop-VMByTurningOffVM {
 		if (-not $PSBoundParameters.ContainsKey('WhatIf')) {
 			$WhatIfPreference = $PSCmdlet.SessionState.PSVariable.GetValue('WhatIfPreference')
 		}
-		write-LogDebug ('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
+		write-LogDebug('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
 	}
 
 	Process {
@@ -560,7 +564,7 @@ function Stop-VMByTurningOffVM {
 		# -Confirm --> $ConfirmPreference = 'Low'
 		# ShouldProcess intercepts WhatIf* --> no need to pass it on
 		if ($Force -or $PSCmdlet.ShouldProcess("ShouldProcess?")) {
-			write-LogDebug ('[{0}] Reached command' -f $MyInvocation.MyCommand)
+			write-LogDebug('[{0}] Reached command' -f $MyInvocation.MyCommand)
 			# Variable scope ensures that parent session remains unchanged
 			$ConfirmPreference = 'None'
 
@@ -568,18 +572,18 @@ function Stop-VMByTurningOffVM {
 				$vmname = $vmnames[$i];
 				$vm = Get-VM -Name $vmname -Computername $hostname
 				if ($vm.State -ne "Off") {
-					write-LogInfo "Direct turning off the VM $vmname (no regular gracefull shutdown)."
-					write-LogDebug "Current VM $vmname state: $($vm.State)"
-					write-LogDebug "Current VM $vmname status: $($vm.Status)"
+					write-LogInfo("Direct turning off the VM $vmname (no regular gracefull shutdown).")
+					write-LogDebug("Current VM $vmname state: $($vm.State)")
+					write-LogDebug("Current VM $vmname status: $($vm.Status)")
 
 					Stop-VM -Name $vmname -ComputerName $hostname -TurnOff -Force -ErrorAction SilentlyContinue
 					Start-Sleep -Seconds 5
-					write-LogDebug "Current VM $vmname state: $($vm.State)"
-					write-LogDebug "Current VM $vmname status: $($vm.Status)"
-					write-LogInfo "VM $vmname on $hostname is now turned off."
+					write-LogDebug("Current VM $vmname state: $($vm.State)")
+					write-LogDebug("Current VM $vmname status: $($vm.Status)")
+					write-LogInfo("VM $vmname on $hostname is now turned off.")
 				}
 				else {
-					write-LogInfo "VM $($vm.Name) is already turned off."
+					write-LogInfo("VM $($vm.Name) is already turned off.")
 				}
 			}
 		}
@@ -587,7 +591,7 @@ function Stop-VMByTurningOffVM {
 	}
 
 	End {
-		write-LogDebug ('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
+		write-LogDebug('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
 	}
 }
 
@@ -617,7 +621,7 @@ function Start-HyperVVMShutdown {
 		if (-not $PSBoundParameters.ContainsKey('WhatIf')) {
 			$WhatIfPreference = $PSCmdlet.SessionState.PSVariable.GetValue('WhatIfPreference')
 		}
-		write-LogDebug ('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
+		write-LogDebug('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
 	}
 
 	Process {
@@ -626,7 +630,7 @@ function Start-HyperVVMShutdown {
 		# -Confirm --> $ConfirmPreference = 'Low'
 		# ShouldProcess intercepts WhatIf* --> no need to pass it on
 		if ($Force -or $PSCmdlet.ShouldProcess("ShouldProcess?")) {
-			write-LogDebug ('[{0}] Reached command' -f $MyInvocation.MyCommand)
+			write-LogDebug('[{0}] Reached command' -f $MyInvocation.MyCommand)
 			# Variable scope ensures that parent session remains unchanged
 			$ConfirmPreference = 'None'
 
@@ -637,13 +641,13 @@ function Start-HyperVVMShutdown {
 				$vm = Get-VM -Name $vmname -Computername $hostname
 
 				if ($vm.State -ne "Off") {
-					write-LogInfo "Shutting down VM $vmname on $hostname started."
+					write-LogInfo("Shutting down VM $vmname on $hostname started.")
 					$vm = Get-VM -Name $vmname -Computername $hostname
 
 					Stop-VM -Name $vmname -ComputerName $hostname -Force -ErrorAction Stop
 				}
 				else {
-					write-LogInfo "VM $vmname on $hostname is already turned off."
+					write-LogInfo("VM $vmname on $hostname is already turned off.")
 				}
 			}
 		}
@@ -652,12 +656,12 @@ function Start-HyperVVMShutdown {
 	}
 
 	End {
-		write-LogDebug ('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
+		write-LogDebug('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
 	}
 }
 
 function Get-StatusOfShutdownVM {
-	write-LogInfo "Waiting until all VM(s) has been shutted down."
+	write-LogInfo("Waiting until all VM(s) has been shutted down.")
 
 	$finishedVMs = New-Object System.Collections.ArrayList;
 
@@ -667,12 +671,12 @@ function Get-StatusOfShutdownVM {
 	while ($workInProgress) {
 		for ($i = 0; $i -lt $vmnames.Count; $i++) {
 			$vmname = $vmnames[$i];
-			write-LogInfo "Waiting until VM $vmname state is ""Off""."
+			write-LogInfo("Waiting until VM $vmname state is ""Off"".")
 			$vm = Get-VM -Name $vmname -Computername $hostname
 
 			if ($vm.State -eq 'Off') {
 				$finishedVMs.Add($vmname) | Out-Null
-				write-LogInfo "VM $vmname is turned off."
+				write-LogInfo("VM $vmname is turned off.")
 			}
 		}
 
@@ -688,15 +692,15 @@ function Get-StatusOfShutdownVM {
 
 			Start-Sleep -Seconds 10
 			$finishedVMs.Clear();
-			write-LogInfo "Checking status again in 10 sec."
+			write-LogInfo("Checking status again in 10 sec.")
 		}
 		else {
-			write-LogInfo "All configured VMs have been shut down."
+			write-LogInfo("All configured VMs have been shut down.")
 			$workInProgress = $false;
 		}
 	}
 
-	write-LogInfo "All VM(s) have been shutted down."
+	write-LogInfo("All VM(s) have been shutted down.")
 }
 
 function Start-TurnOfVM {
@@ -725,7 +729,7 @@ function Start-TurnOfVM {
 		if (-not $PSBoundParameters.ContainsKey('WhatIf')) {
 			$WhatIfPreference = $PSCmdlet.SessionState.PSVariable.GetValue('WhatIfPreference')
 		}
-		write-LogDebug ('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
+		write-LogDebug('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
 	}
 
 	Process {
@@ -734,7 +738,7 @@ function Start-TurnOfVM {
 		# -Confirm --> $ConfirmPreference = 'Low'
 		# ShouldProcess intercepts WhatIf* --> no need to pass it on
 		if ($Force -or $PSCmdlet.ShouldProcess("ShouldProcess?")) {
-			write-LogDebug ('[{0}] Reached command' -f $MyInvocation.MyCommand)
+			write-LogDebug('[{0}] Reached command' -f $MyInvocation.MyCommand)
 			# Variable scope ensures that parent session remains unchanged
 			$ConfirmPreference = 'None'
 
@@ -744,7 +748,7 @@ function Start-TurnOfVM {
 	}
 
 	End {
-		write-LogDebug ('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
+		write-LogDebug('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
 	}
 
 }
@@ -775,7 +779,7 @@ function New-HyperVCheckpoint {
 		if (-not $PSBoundParameters.ContainsKey('WhatIf')) {
 			$WhatIfPreference = $PSCmdlet.SessionState.PSVariable.GetValue('WhatIfPreference')
 		}
-		write-LogDebug ('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
+		write-LogDebug('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
 	}
 
 	Process {
@@ -784,7 +788,7 @@ function New-HyperVCheckpoint {
 		# -Confirm --> $ConfirmPreference = 'Low'
 		# ShouldProcess intercepts WhatIf* --> no need to pass it on
 		if ($Force -or $PSCmdlet.ShouldProcess("ShouldProcess?")) {
-			write-LogDebug ('[{0}] Reached command' -f $MyInvocation.MyCommand)
+			write-LogDebug('[{0}] Reached command' -f $MyInvocation.MyCommand)
 			# Variable scope ensures that parent session remains unchanged
 			$ConfirmPreference = 'None'
 
@@ -793,13 +797,13 @@ function New-HyperVCheckpoint {
 
 				$checkpoint = Get-VMCheckpoint -VMname $vmname -ComputerName $hostname | Where-Object { $_.Name -eq "$CheckpointName" }
 				if ($null -ne $checkpoint) {
-					write-LogError "Checkpoint $CheckpointName on VM $vmname already exists. Please remove the old checkpoint or choose a different name"
+					write-LogError("Checkpoint $CheckpointName on VM $vmname already exists. Please remove the old checkpoint or choose a different name")
 					#throw "Duplicate checkpoint name."
-					write-LogError "Duplicate checkpoint name."
+					write-LogError("Duplicate checkpoint name.")
 					exit 1
 				}
 
-				write-LogInfo "Creating checkpoint $CheckpointName for VM $vmname on host $hostname"
+				write-LogInfo("Creating checkpoint $CheckpointName for VM $vmname on host $hostname")
 				Checkpoint-VM -Name $vmname -ComputerName $hostname -CheckpointName $CheckpointName -ErrorAction Stop
 			}
 
@@ -809,14 +813,14 @@ function New-HyperVCheckpoint {
 	}
 
 	End {
-		write-LogDebug ('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
+		write-LogDebug('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
 	}
 }
 
 function Get-StatusOfNewHyperVCheckpoint {
 	param($vmnames, $hostname)
 
-	write-LogInfo "Waiting until checkpoint for all VM(s) has been created."
+	write-LogInfo("Waiting until checkpoint for all VM(s) has been created.")
 
 	$finishedVMs = New-Object System.Collections.ArrayList;
 
@@ -824,21 +828,21 @@ function Get-StatusOfNewHyperVCheckpoint {
 	while ($workInProgress) {
 		for ($i = 0; $i -lt $vmnames.Count; $i++) {
 			$vmname = $vmnames[$i];
-			write-LogInfo "Waiting until VM $vmname checkpoint state is not ""Creating""."
+			write-LogInfo("Waiting until VM $vmname checkpoint state is not ""Creating"".")
 			$vm = Get-VM -Name $vmname -Computername $hostname
 
 			if ($vm.Status -match "Creating") {
-				write-LogInfo "Creating a checkpoint on VM $vmname on host $hostname is still in progress"
+				write-LogInfo("Creating a checkpoint on VM $vmname on host $hostname is still in progress")
 			}
 			else {
 				$finishedVMs.Add($vmname) | Out-Null
-				write-LogInfo "Checkpoint $CheckpointName for the VM $vmname on host $hostname has been created.";
+				write-LogInfo("Checkpoint $CheckpointName for the VM $vmname on host $hostname has been created.");
 			}
 
 			if ($vmnames.Count -ne $finishedVMs.Count) {
 				$workInProgress = $true;
 				Start-Sleep -Seconds 5
-				write-LogInfo "Checking status again in 5 sec."
+				write-LogInfo("Checking status again in 5 sec.")
 			}
 			else {
 				$workInProgress = $false;
@@ -846,7 +850,7 @@ function Get-StatusOfNewHyperVCheckpoint {
 		}
 	}
 
-	write-LogInfo "checkpoints for all VM(s) have been created."
+	write-LogInfo("checkpoints for all VM(s) have been created.")
 }
 
 function Restore-HyperVCheckpoint {
@@ -876,7 +880,7 @@ function Restore-HyperVCheckpoint {
 		if (-not $PSBoundParameters.ContainsKey('WhatIf')) {
 			$WhatIfPreference = $PSCmdlet.SessionState.PSVariable.GetValue('WhatIfPreference')
 		}
-		write-LogDebug ('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
+		write-LogDebug('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
 	}
 
 	Process {
@@ -885,7 +889,7 @@ function Restore-HyperVCheckpoint {
 		# -Confirm --> $ConfirmPreference = 'Low'
 		# ShouldProcess intercepts WhatIf* --> no need to pass it on
 		if ($Force -or $PSCmdlet.ShouldProcess("ShouldProcess?")) {
-			write-LogDebug ('[{0}] Reached command' -f $MyInvocation.MyCommand)
+			write-LogDebug('[{0}] Reached command' -f $MyInvocation.MyCommand)
 			# Variable scope ensures that parent session remains unchanged
 			$ConfirmPreference = 'None'
 
@@ -894,12 +898,12 @@ function Restore-HyperVCheckpoint {
 				$checkpoint = Get-VMCheckpoint -VMname $vmname -ComputerName $hostname | Where-Object { $_.Name -eq "$CheckpointName" }
 
 				if ($null -eq $checkpoint) {
-					write-LogError "Checkpoint $CheckpointName of VM $vmname on host $hostname doesnt exist."
+					write-LogError("Checkpoint $CheckpointName of VM $vmname on host $hostname doesnt exist.")
 					#throw "Checkpoint $CheckpointName of VM $vmname on host $hostname doesnt exist."
 					exit 1
 				}
 
-				write-LogInfo "Restoring checkpoint $CheckpointName for VM $vmname on host $hostname have been started."
+				write-LogInfo("Restoring checkpoint $CheckpointName for VM $vmname on host $hostname have been started.")
 				Restore-VMcheckpoint -VMName $vmname -ComputerName $hostname -Name $CheckpointName -Confirm:$false -ErrorAction Stop
 			}
 		}
@@ -907,14 +911,14 @@ function Restore-HyperVCheckpoint {
 	}
 
 	End {
-		write-LogDebug ('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
+		write-LogDebug('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
 	}
 }
 
 function Get-StatusOfRestoreHyperVCheckpoint {
 	param($vmnames, $hostname)
 
-	write-LogInfo "Waiting until restoring checkpoint has been finished for all VM(s)."
+	write-LogInfo("Waiting until restoring checkpoint has been finished for all VM(s).")
 
 	$finishedVMs = new-object System.collections.arraylist;
 
@@ -922,21 +926,21 @@ function Get-StatusOfRestoreHyperVCheckpoint {
 	while ($workInProgress) {
 		for ($i = 0; $i -lt $vmnames.Count; $i++) {
 			$vmname = $vmnames[$i];
-			write-LogInfo "Waiting until VM $vmname state is not ""Applying""."
+			write-LogInfo("Waiting until VM $vmname state is not ""Applying"".")
 			$vm = Get-VM -Name $vmname -Computername $hostname
 
 			if ($vm.Status -match "Applying") {
-				write-LogInfo "Restoring checkpoint for VM $vmname on host $hostname is still in progress.";
+				write-LogInfo("Restoring checkpoint for VM $vmname on host $hostname is still in progress.");
 			}
 			else {
 				$finishedVMs.Add($vmname) | Out-Null
-				write-LogInfo "Checkpoint $CheckpointName for the VM $vmname has been restored.";
+				write-LogInfo("Checkpoint $CheckpointName for the VM $vmname has been restored.");
 			}
 
 			if ($vmnames.Count -ne $finishedVMs.Count) {
 				$workInProgress = $true;
 				Start-Sleep -Seconds 5
-				write-LogInfo "Checking status again in 5 sec."
+				write-LogInfo("Checking status again in 5 sec.")
 			}
 			else {
 				$workInProgress = $false;
@@ -944,7 +948,7 @@ function Get-StatusOfRestoreHyperVCheckpoint {
 		}
 	}
 
-	write-LogInfo "Restoring checkpoints has been finished for all VM(s)."
+	write-LogInfo("Restoring checkpoints has been finished for all VM(s).")
 }
 
 function Remove-HyperVCheckpoint {
@@ -974,7 +978,7 @@ function Remove-HyperVCheckpoint {
 		if (-not $PSBoundParameters.ContainsKey('WhatIf')) {
 			$WhatIfPreference = $PSCmdlet.SessionState.PSVariable.GetValue('WhatIfPreference')
 		}
-		write-LogDebug ('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
+		write-LogDebug('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
 	}
 
 	Process {
@@ -983,7 +987,7 @@ function Remove-HyperVCheckpoint {
 		# -Confirm --> $ConfirmPreference = 'Low'
 		# ShouldProcess intercepts WhatIf* --> no need to pass it on
 		if ($Force -or $PSCmdlet.ShouldProcess("ShouldProcess?")) {
-			write-LogDebug ('[{0}] Reached command' -f $MyInvocation.MyCommand)
+			write-LogDebug('[{0}] Reached command' -f $MyInvocation.MyCommand)
 			# Variable scope ensures that parent session remains unchanged
 			$ConfirmPreference = 'None'
 
@@ -992,12 +996,12 @@ function Remove-HyperVCheckpoint {
 				$checkpoint = Get-VMCheckpoint -VMname $vmname -ComputerName $hostname | Where-Object { $_.Name -eq "$CheckpointName" }
 
 				if ($null -eq $checkpoint) {
-					write-LogWarning "Checkpoint $CheckpointName of VM $vmname on host $hostname doesnt exist."
+					write-LogWarning("Checkpoint $CheckpointName of VM $vmname on host $hostname doesnt exist.")
 					#throw "Checkpoint $CheckpointName of VM $vmname on host $hostname doesnt exist."
 					exit 1
 				}
 
-				write-LogInfo "Removing checkpoint $CheckpointName for VM $vmname on host $hostname have been started."
+				write-LogInfo("Removing checkpoint $CheckpointName for VM $vmname on host $hostname have been started.")
 				Remove-VMCheckpoint -VMName $vmname -ComputerName $hostname -Name $CheckpointName -Confirm:$false -ErrorAction Stop
 			}
 		}
@@ -1006,14 +1010,14 @@ function Remove-HyperVCheckpoint {
 	}
 
 	End {
-		write-LogDebug ('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
+		write-LogDebug('[{0}] Confirm={1} ConfirmPreference={2} WhatIf={3} WhatIfPreference={4}' -f $MyInvocation.MyCommand, $Confirm, $ConfirmPreference, $WhatIf, $WhatIfPreference)
 	}
 }
 
 function Get-StatusOfRemoveHyperVCheckpoint {
 	param($vmnames, $hostname)
 
-	write-LogInfo "Waiting until removing checkpoint has been finished for all VM(s)."
+	write-LogInfo("Waiting until removing checkpoint has been finished for all VM(s).")
 
 	$finishedVMs = new-object System.collections.arraylist;
 
@@ -1021,21 +1025,21 @@ function Get-StatusOfRemoveHyperVCheckpoint {
 	while ($workInProgress) {
 		for ($i = 0; $i -lt $vmnames.Count; $i++) {
 			$vmname = $vmnames[$i];
-			write-LogInfo "Waiting until VM $vmname state is not ""Merging""."
+			write-LogInfo("Waiting until VM $vmname state is not ""Merging"".")
 			$vm = Get-VM -Name $vmname -Computername $hostname
 
 			if ($vm.Status -match "Merge") {
-				write-LogInfo "Removing checkpoint $CheckpointName for VM $vmname on host $hostname is still in progress.";
+				write-LogInfo("Removing checkpoint $CheckpointName for VM $vmname on host $hostname is still in progress.");
 			}
 			else {
 				$finishedVMs.Add($vmname) | Out-Null
-				write-LogInfo "Checkpoint $CheckpointName for the VM $vmname has been removed.";
+				write-LogInfo("Checkpoint $CheckpointName for the VM $vmname has been removed.");
 			}
 
 			if ($vmnames.Count -ne $finishedVMs.Count) {
 				$workInProgress = $true;
 				Start-Sleep -Seconds 5
-				write-LogInfo "Checking status again in 5 sec."
+				write-LogInfo("Checking status again in 5 sec.")
 			}
 			else {
 				$workInProgress = $false;
@@ -1043,7 +1047,7 @@ function Get-StatusOfRemoveHyperVCheckpoint {
 		}
 	}
 
-	write-LogInfo "Removing checkpoint has been finished for all VM(s)."
+	write-LogInfo("Removing checkpoint has been finished for all VM(s).")
 }
 #endregion
 
@@ -1052,21 +1056,24 @@ Try {
 	if (![string]::IsNullOrEmpty($hyperVPsModuleVersion)) {
 		# in case something it not working as expected we want to know which modules are available
 		$availableModules = Get-Module hyper-v -ListAvailable
-		write-LogDebug ($availableModules | Format-Table | Out-String)
+		write-LogDebug($availableModules | Format-Table | Out-String)
 
-		write-LogInfo "Loading Hyper-V PowerShell module version $hyperVPsModuleVersion";
+		write-LogInfo("Loading Hyper-V PowerShell module version $hyperVPsModuleVersion");
 		Import-Module –Name Hyper-V -RequiredVersion $hyperVPsModuleVersion -Force -Global;
 
 		# in case something it not working as expected we want to know which modules are loaded
 		$checkLoadedModules = Get-Module hyper-v
-		write-LogDebug ($checkLoadedModules | Format-Table | Out-String)
+		write-LogDebug($checkLoadedModules | Format-Table | Out-String)
 	}
 	else {
-		write-LogInfo "Loading Hyper-V system default PowerShell module"
+		write-LogInfo("Loading Hyper-V system default PowerShell module")
 	}
 
+ 	write-LogSectionStart("Hyper-V action core script general info")
 	Get-HyperVCmdletsAvailable
 	Get-ParameterOverview
+ 	write-LogSectionEnd("Hyper-V action core script general info")
+  
 	Set-HyperVCmdletCacheDisabled -Confirm:$false
 
 	$vmNames = Get-VMNamesFromVMNameParameter
@@ -1098,7 +1105,7 @@ Try {
 			Get-StatusOfRemoveHyperVCheckpoint -vmnames $vmNames -hostname $hostName
 		}
 		default {
-			write-LogError "Invalid command $Action. Aborting execution.";
+			write-LogError("Invalid command $Action. Aborting execution.");
 			exit 1;
 		}
 	}
@@ -1106,10 +1113,10 @@ Try {
 Catch {
 	$currentUser = [Security.Principal.WindowsIdentity]::GetCurrent();
 
-	write-LogWarning ('You have may not enough permission to use the hyper-v cmdlets, please check this:
+	write-LogWarning('You have may not enough permission to use the hyper-v cmdlets, please check this:
 	Add the ' + $currentUser.Name + ' user to the ""Hyper-V Administrator"" and ""Remote Management Users"" group on the target hyper-v host which the agent wants to access.
 	You can authorize the build agent user using two commands: net localgroup "Hyper-V Administrators" ' + $currentUser.Name + ' /add and net localgroup "Remote Management Users" ' + $currentUser.Name + ' /add')
-	write-LogError $_.Exception.Message;
+	write-LogError($_.Exception.Message);
 	exit 1;
 }
 finally {
