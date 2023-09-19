@@ -28,7 +28,7 @@ function write-LogError($errorMessage,$filename="HyperVServer.ps1")
 
 function write-LogInfo($message)
 {
-    #Used to provide informational messages about the workflow. 
+    #Used to provide informational messages about the workflow.
     #These messages are displayed in white.
     Write-Output "${message}"
 }

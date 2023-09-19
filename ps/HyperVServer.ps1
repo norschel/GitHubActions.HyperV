@@ -342,7 +342,7 @@ function Get-ApplicationsHealthyStatusOfStartHyperVVM {
 			}
 		}
 	}
- 	write-LogSectionEnd("Status check messages");	
+ 	write-LogSectionEnd("Status check messages");
 
 	$workInProgress = $true;
 	while ($workInProgress) {
@@ -353,7 +353,7 @@ function Get-ApplicationsHealthyStatusOfStartHyperVVM {
 
 			# backup for future -and $vm.Heartbeat -ne "OkApplicationsUnknown"
 			# hyper-v show unkown in case the hyper-v extensions are not uptodate
-   			write-LogSectionStart("Status check messages");	
+   			write-LogSectionStart("Status check messages");
 			while ($vm.Heartbeat -ne "OkApplicationsHealthy" -and !$circuitBreaker) {
 				Start-Sleep -Seconds 5
 				write-LogInfo("Checking status again in 5 sec.")
@@ -388,7 +388,7 @@ function Get-ApplicationsHealthyStatusOfStartHyperVVM {
 					continue
 				}
 			}
-   			write-LogSectionEnd("Status check messages");	
+   			write-LogSectionEnd("Status check messages");
 
 			$workInProgress = $false;
 			write-LogInfo("The VM $vmname has been started.");
@@ -441,14 +441,14 @@ function Get-TimeBasedStatusOfStartHyperVVM {
 
 	[int]$waitingInterval = ($timeBasedStatusWaitInterval / 30);
 
-	write-LogSectionStart("Status check messages");	
+	write-LogSectionStart("Status check messages");
 	for ($i = 1; $i -le $waitingTimeNumberOfStatusNotifications; $i++) {
 		Start-Sleep -Seconds $waitingInterval
 		$timeBasedStatusWaitIntervalLeft = $timeBasedStatusWaitInterval - $i * $waitingInterval;
 
 		write-LogInfo("Waiting interval is reached in $timeBasedStatusWaitIntervalLeft sec.")
 	}
- 	write-LogSectionEnd("Status check messages");	
+ 	write-LogSectionEnd("Status check messages");
 	write-LogInfo("Waiting interval $timeBasedStatusWaitInterval seconds reached. We go on ...")
 }
 
@@ -1074,7 +1074,7 @@ Try {
 	Get-HyperVCmdletsAvailable
 	Get-ParameterOverview
  	write-LogSectionEnd("Hyper-V action core script general info")
-  
+
 	Set-HyperVCmdletCacheDisabled -Confirm:$false
 
 	$vmNames = Get-VMNamesFromVMNameParameter
