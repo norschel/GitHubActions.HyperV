@@ -1,11 +1,12 @@
 import { spawn } from "child_process";
-import { getInput, setFailed } from "@actions/core";
+import { getInput, setFailed, debug, startGroup, endGroup } from "@actions/core";
 import { hostname, platform } from "os";
 import { PowerShellSSHClient } from "./PowerShellSshClient";
 
 async function main() {
   // https://stackoverflow.com/questions/8683895/how-do-i-determine-the-current-operating-system-with-node-js
-
+  
+  startGroup("Hyper-V action general information");
   console.log(`Starting the HyperV action on Hyper-V host ${hostname} using the plattform ${platform()}`);
   var isSshModeEnabledString = getInput("SSHMode", { required: false, trimWhitespace: true });
   var isSshModeEnabled = getBoolean(isSshModeEnabledString);
@@ -43,7 +44,7 @@ async function executeInPowerShellRemoteMode() {
     //console.log(childProcess.toLocaleString());
     var hyperVCmd = String.prototype.concat(".\\ps\\HyperVServer.ps1");
     hyperVCmd += String.prototype.concat(createHyperVScriptCommand());
-
+    endGroup();
     const pwshHyperV = spawn("powershell.exe", [hyperVCmd], {
       stdio: "inherit",
     });
@@ -156,6 +157,7 @@ function createHyperVScriptCommand() {
   hyperVCmd += String.prototype.concat(" ", "-Action", " ", action);
   hyperVCmd += String.prototype.concat(" ", "-VMName", " ", vmName);
   hyperVCmd += String.prototype.concat(optionalParameters);
+  debug("### HyperV command script parameter: " + hyperVCmd);
   return hyperVCmd;
 }
 
@@ -193,12 +195,11 @@ async function executeInSSHMode() {
   }
 
   var scriptArguments = createHyperVScriptCommand();
-  console.log("### Script arguments: " + scriptArguments);
+  endGroup();
   try {
     var result = await ssh.executeScript('./ps/HyperVServer.ps1', scriptArguments);
     result = result.trim();
-    //only used for testing
-    //console.log("### Result: " + result);
+    debug("### Result: " + result);
     console.log("### Done");
   }
   catch (error) {

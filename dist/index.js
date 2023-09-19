@@ -165,6 +165,7 @@ const os_1 = __nccwpck_require__(2037);
 const PowerShellSshClient_1 = __nccwpck_require__(9431);
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
+        (0, core_1.startGroup)("Hyper-V action general information");
         console.log(`Starting the HyperV action on Hyper-V host ${os_1.hostname} using the plattform ${(0, os_1.platform)()}`);
         var isSshModeEnabledString = (0, core_1.getInput)("SSHMode", { required: false, trimWhitespace: true });
         var isSshModeEnabled = getBoolean(isSshModeEnabledString);
@@ -185,6 +186,7 @@ function executeInPowerShellRemoteMode() {
             console.log("Starting executing PowerShell commands.");
             var hyperVCmd = String.prototype.concat(".\\ps\\HyperVServer.ps1");
             hyperVCmd += String.prototype.concat(createHyperVScriptCommand());
+            (0, core_1.endGroup)();
             const pwshHyperV = (0, child_process_1.spawn)("powershell.exe", [hyperVCmd], {
                 stdio: "inherit",
             });
@@ -249,6 +251,7 @@ function createHyperVScriptCommand() {
     hyperVCmd += String.prototype.concat(" ", "-Action", " ", action);
     hyperVCmd += String.prototype.concat(" ", "-VMName", " ", vmName);
     hyperVCmd += String.prototype.concat(optionalParameters);
+    (0, core_1.debug)("### HyperV command script parameter: " + hyperVCmd);
     return hyperVCmd;
 }
 function executeInSSHMode() {
@@ -281,10 +284,11 @@ function executeInSSHMode() {
             });
         }
         var scriptArguments = createHyperVScriptCommand();
-        console.log("### Script arguments: " + scriptArguments);
+        (0, core_1.endGroup)();
         try {
             var result = yield ssh.executeScript('./ps/HyperVServer.ps1', scriptArguments);
             result = result.trim();
+            (0, core_1.debug)("### Result: " + result);
             console.log("### Done");
         }
         catch (error) {
@@ -881,7 +885,7 @@ class OidcClient {
                 .catch(error => {
                 throw new Error(`Failed to get ID Token. \n 
         Error Code : ${error.statusCode}\n 
-        Error Message: ${error.result.message}`);
+        Error Message: ${error.message}`);
             });
             const id_token = (_a = res.result) === null || _a === void 0 ? void 0 : _a.value;
             if (!id_token) {
@@ -1534,6 +1538,19 @@ class HttpClientResponse {
             }));
         });
     }
+    readBodyBuffer() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
+                const chunks = [];
+                this.message.on('data', (chunk) => {
+                    chunks.push(chunk);
+                });
+                this.message.on('end', () => {
+                    resolve(Buffer.concat(chunks));
+                });
+            }));
+        });
+    }
 }
 exports.HttpClientResponse = HttpClientResponse;
 function isHttps(requestUrl) {
@@ -2038,7 +2055,13 @@ function getProxyUrl(reqUrl) {
         }
     })();
     if (proxyVar) {
-        return new URL(proxyVar);
+        try {
+            return new URL(proxyVar);
+        }
+        catch (_a) {
+            if (!proxyVar.startsWith('http://') && !proxyVar.startsWith('https://'))
+                return new URL(`http://${proxyVar}`);
+        }
     }
     else {
         return undefined;
@@ -17871,7 +17894,7 @@ const createKeyExchange = (() => {
       this._dhData = undefined;
       this._sig = undefined;
     }
-    finish() {
+    finish(scOnly) {
       if (this._finished)
         return false;
       this._finished = true;
@@ -18122,9 +18145,26 @@ const createKeyExchange = (() => {
           this._protocol._packetRW.write.finalize(packet, true)
         );
       }
-      trySendNEWKEYS(this);
 
-      const completeHandshake = () => {
+      if (isServer || !scOnly)
+        trySendNEWKEYS(this);
+
+      let hsCipherConfig;
+      let hsWrite;
+      const completeHandshake = (partial) => {
+        if (hsCipherConfig) {
+          trySendNEWKEYS(this);
+          hsCipherConfig.outbound.seqno = this._protocol._cipher.outSeqno;
+          this._protocol._cipher.free();
+          this._protocol._cipher = createCipher(hsCipherConfig);
+          this._protocol._packetRW.write = hsWrite;
+          hsCipherConfig = undefined;
+          hsWrite = undefined;
+          this._protocol._onHandshakeComplete(negotiated);
+
+          return false;
+        }
+
         if (!this.sessionID)
           this.sessionID = exchangeHash;
 
@@ -18207,9 +18247,8 @@ const createKeyExchange = (() => {
             macKey: (isServer ? scMacKey : csMacKey),
           },
         };
-        this._protocol._cipher && this._protocol._cipher.free();
-        this._protocol._decipher && this._protocol._decipher.free();
-        this._protocol._cipher = createCipher(config);
+        this._protocol._decipher.free();
+        hsCipherConfig = config;
         this._protocol._decipher = createDecipher(config);
 
         const rw = {
@@ -18276,7 +18315,8 @@ const createKeyExchange = (() => {
         }
         this._protocol._packetRW.read.cleanup();
         this._protocol._packetRW.write.cleanup();
-        this._protocol._packetRW = rw;
+        this._protocol._packetRW.read = rw.read;
+        hsWrite = rw.write;
 
         // Cleanup/reset various state
         this._public = null;
@@ -18289,13 +18329,16 @@ const createKeyExchange = (() => {
         this._dhData = undefined;
         this._sig = undefined;
 
-        this._protocol._onHandshakeComplete(negotiated);
-
+        if (!partial)
+          return completeHandshake();
         return false;
       };
+
+      if (isServer || scOnly)
+        this.finish = completeHandshake;
+
       if (!isServer)
-        return completeHandshake();
-      this.finish = completeHandshake;
+        return completeHandshake(scOnly);
     }
 
     start() {
@@ -18556,12 +18599,8 @@ const createKeyExchange = (() => {
           );
           this._receivedNEWKEYS = true;
           ++this._step;
-          if (this._protocol._server || this._hostVerified)
-            return this.finish();
 
-          // Signal to current decipher that we need to change to a new decipher
-          // for the next packet
-          return false;
+          return this.finish(!this._protocol._server && !this._hostVerified);
         default:
           return doFatalError(
             this._protocol,
@@ -26617,7 +26656,7 @@ module.exports = require("zlib");
 /***/ ((module) => {
 
 "use strict";
-module.exports = {"i8":"1.13.0"};
+module.exports = {"i8":"1.14.0"};
 
 /***/ })
 
