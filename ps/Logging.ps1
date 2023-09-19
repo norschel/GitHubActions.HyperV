@@ -43,4 +43,4 @@ function write-LogSectionEnd($sectionName)
     # GH doesn't support title for section end
     Write-Output "::endgroup::"
 }
-write-output "Imported logging functions"
+write-output "Imported PowerShell logging functions for GitHub Actions"

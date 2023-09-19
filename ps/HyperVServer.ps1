@@ -20,8 +20,10 @@ param(
 	[string]$HyperV_PsModuleVersion)
 
 [string]$ConfirmPreference = "None"
+
 import-module .\ps\Logging.ps1
 
+write-LogSectionStart("Hyper-V action core script general info")
 $timeBasedStatusWaitInterval = $StartVMWaitTimeBasedCheckInterval;
 $statusCheckType = $StartVMStatusCheckType;
 $waitingTimeNumberOfStatusNotifications = $HyperV_StartVMWaitingNumberOfStatusNotifications
@@ -31,7 +33,7 @@ $hyperVPsModuleVersion = $HyperV_PsModuleVersion;
 $Action = $Action.ToLowerInvariant();
 
 function Get-HyperVCmdletsAvailable {
-	write-LogInfo("Check if Hyper-V PowerShell management commandlets are installed.")
+	write-LogInfo("Checking if Hyper-V PowerShell management commandlets are installed.")
 
 	$hyperVCommands = (
 		('GET-VM'),
@@ -52,15 +54,15 @@ function Get-HyperVCmdletsAvailable {
 			write-LogNotice("You can use PowerShell with the following command to install the missing components:")
 			write-LogNotice("Enable-WindowsOptionalFeature –FeatureName Microsoft-Hyper-V-Management-PowerShell,Microsoft-Hyper-V-Management-Clients –Online -All")
 
-			#throw "Microsoft-Hyper-V-Management-PowerShell are not installed."
-			write-LogError("Microsoft-Hyper-V-Management-PowerShell are not installed.")
+			#throw "Microsoft-Hyper-V-Management-PowerShell is not installed."
+			write-LogError("Microsoft-Hyper-V-Management-PowerShell is not installed.")
 			exit 1
 
 			return
 		}
 	}
 
-	write-LogInfo("Microsoft-Hyper-V-Management-PowerShell are installed.")
+	write-LogInfo("Microsoft-Hyper-V-Management-PowerShell is installed.")
 
 }
 
@@ -170,7 +172,7 @@ function Set-HyperVCmdletCacheEnabled {
 
 function Get-ParameterOverview {
 	write-LogInfo("Action is $Action.");
-	write-LogInfo("Assigned VM name(s) are $VMName.");
+	write-LogInfo("Assigned VM name(s) is/are $VMName.");
 	write-LogInfo("Assigned Hyper-V server host is $Computername.");
 
 	if ($Action -eq "StartVM") {
@@ -1069,7 +1071,6 @@ Try {
 		write-LogInfo("Loading Hyper-V system default PowerShell module")
 	}
 
- 	write-LogSectionStart("Hyper-V action core script general info")
 	Get-HyperVCmdletsAvailable
 	Get-ParameterOverview
  	write-LogSectionEnd("Hyper-V action core script general info")
