@@ -21,7 +21,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.8.6",
-    "@types/ssh2": "^1.11.14",
+    "@types/ssh2": "^1.11.15",
     "typescript": "^5.2.2"
   }
 }
