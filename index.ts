@@ -37,11 +37,6 @@ async function executeInPowerShellRemoteMode() {
     // https://www.freecodecamp.org/news/node-js-child-processes-everything-you-need-to-know-e69498fe970a/
     // https://nodejs.org/api/child_process.html
     // https://2ality.com/2018/05/child-process-streams.html
-    // https://www.npmjs.com/package/@rauschma/stringio
-    //var childProcess = execSync("write-host $env:path; get-vm", {
-    //  shell: "powershell.exe",
-    //});
-    //console.log(childProcess.toLocaleString());
     var hyperVCmd = String.prototype.concat(".\\ps\\HyperVServer.ps1");
     hyperVCmd += String.prototype.concat(createHyperVScriptCommand());
     endGroup();
