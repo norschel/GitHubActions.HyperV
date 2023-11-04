@@ -37,7 +37,7 @@ else
 	else {
 		Write-Error "Could not load logging library";
 	}
-}	
+}
 
 write-LogSectionStart("Hyper-V action core script general info")
 $timeBasedStatusWaitInterval = $StartVMWaitTimeBasedCheckInterval;
