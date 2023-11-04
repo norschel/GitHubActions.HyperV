@@ -396,3 +396,14 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Files from building the action - only needed when building because of NCC
+.DS_Store
+index.d.ts
+index.js
+index.js.map
+index.ts
+PowerShellSshClient.d.ts
+PowerShellSshClient.js
+PowerShellSshClient.js.map
+testbst
