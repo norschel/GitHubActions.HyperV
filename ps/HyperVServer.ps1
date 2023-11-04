@@ -21,7 +21,23 @@ param(
 
 [string]$ConfirmPreference = "None"
 
-import-module .\ps\Logging.ps1
+if (Test-Path .\ps\logging.ps1)
+{
+	# PowerShell Mode
+	import-module .\ps\Logging.ps1
+}
+else
+{
+	# SSH-Mode
+	if (Test-Path .\logging.ps1)
+	{
+		# PowerShell Mode
+		import-module .\Logging.ps1
+	}
+	else {
+		Write-Error "Could not load logging library";
+	}
+}	
 
 write-LogSectionStart("Hyper-V action core script general info")
 $timeBasedStatusWaitInterval = $StartVMWaitTimeBasedCheckInterval;
