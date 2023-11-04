@@ -10,13 +10,20 @@ export class PowerShellSSHClient {
   async executeScript(scriptPath: string, scriptArguments: string): Promise<string> {
     console.log("### SSH Tunnel - Executing script:" + scriptPath);
     const conn = await this.connect();
+    
     console.log("### SSH Tunnel - Retrieving remote temp folder");
     var remoteTempFolder = await this.sendCommand('echo %temp%', conn);
     remoteTempFolder = remoteTempFolder.trim();
     console.log("### SSH Tunnel - Remote temp folder: " + remoteTempFolder);
+
     var remoteScriptPath = String.prototype.concat(remoteTempFolder, '\\HyperVServer.ps1');
     console.log("### SSH Tunnel - Remote script path: " + remoteScriptPath);
     await this.uploadFile(conn, scriptPath, remoteScriptPath);
+    
+    var remoteLogScriptPath = String.prototype.concat(remoteTempFolder, '\\Logging.ps1');
+    console.log("### SSH Tunnel - Remote script path: " + remoteLogScriptPath);
+    await this.uploadFile(conn, scriptPath, remoteLogScriptPath);
+    
     var result = await this.sendCommand(`powershell -Command "${remoteScriptPath} ${scriptArguments}"`, conn);
     result = result.trim();
     //console.log("### SSH Tunnel - Script result: ");

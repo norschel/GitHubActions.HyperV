@@ -26,6 +26,9 @@ class PowerShellSSHClient {
         var remoteScriptPath = String.prototype.concat(remoteTempFolder, '\\HyperVServer.ps1');
         console.log("### SSH Tunnel - Remote script path: " + remoteScriptPath);
         await this.uploadFile(conn, scriptPath, remoteScriptPath);
+        var remoteLogScriptPath = String.prototype.concat(remoteTempFolder, '\\Logging.ps1');
+        console.log("### SSH Tunnel - Remote script path: " + remoteLogScriptPath);
+        await this.uploadFile(conn, scriptPath, remoteLogScriptPath);
         var result = await this.sendCommand(`powershell -Command "${remoteScriptPath} ${scriptArguments}"`, conn);
         result = result.trim();
         await this.disconnect(conn);
