@@ -1,0 +1,57 @@
+# This is a basic workflow to help you get started with Actions
+
+name: HyperVActionRemotePowerShellTest
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  #push:
+  #  branches: [ main ]
+  #pull_request:
+  #  branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: [self-hosted]
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      - uses: ./
+        name: Hyper-V - StartVM
+        with:
+          hostname: localhost
+          vmname: win11test
+          command: StartVM
+          startvmstatuscheckType: WaitingTime
+          startvmwaittimebasedcheckinterval: 15
+      - uses: ./
+        name: Hyper-V - Create Checkpoint
+        with:
+          hostname: localhost
+          vmname: win11test
+          command: createcheckpoint
+          checkpointname: GitHubTest
+      - uses: ./
+        name: Hyper-V - StopVM
+        with:
+          hostname: localhost
+          vmname: win11test
+          command: ShutdownVM
+          startvmstatuschecktype: WaitingTime
+          startvmwaittimebasedcheckinterval: 15
+      - uses: ./
+        name: Hyper-V - Remove Checkpoint
+        with:
+          hostname: localhost
+          vmname: win11test
+          command: removecheckpoint
+          checkpointname: GitHubTest
