@@ -66,5 +66,5 @@ inputs:
     required: false
     default: '22'  
 runs:
-  using: 'node18'
+  using: 'node20'
   main: 'dist/index.js'
