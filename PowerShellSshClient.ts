@@ -20,7 +20,8 @@ export class PowerShellSSHClient {
     console.log("### SSH Tunnel - Remote script path: " + remoteScriptPath);
     await this.uploadFile(conn, scriptPath, remoteScriptPath);
     
-    var remoteLogScriptPath = String.prototype.concat(remoteTempFolder, '\\Logging.ps1');
+    // we need to upload the logging lib into ps folder because of relative paths which are different in PS-Mode
+    var remoteLogScriptPath = String.prototype.concat(remoteTempFolder, '\\ps1\\Logging.ps1');
     console.log("### SSH Tunnel - Remote script path: " + remoteLogScriptPath);
     await this.uploadFile(conn, scriptPath, remoteLogScriptPath);
     
