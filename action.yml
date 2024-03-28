@@ -1,9 +1,9 @@
-name: 'Norschel(Xpirit) Hyper-V Action'
+name: 'Norschel (Xebia) Hyper-V Action'
 description: 'Remote control Hyper-V virtual machines (HyperV) without SCVMM'
 author: Nico Orschel
 branding:
   icon: 'server'
-  color: 'orange'
+  color: 'purple'
 inputs:
   vmname:
     description: 'VM name'

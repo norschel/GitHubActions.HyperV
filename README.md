@@ -1,4 +1,4 @@
-# Norschel(Xpirit) Hyper-V Action (HyperV)
+# Norschel (Xebia) Hyper-V Action (HyperV)
 Remote control one or many virtual machine(s) on a (remote) Hyper-V Server (without SCVMM). 
 This GitHub Actions action supports start and stop a virtual machine plus create, restore and delete Hyper-V snapshots.
 
@@ -6,6 +6,7 @@ This GitHub Actions action supports start and stop a virtual machine plus create
 - Ported Azure Pipeline Hyper-V task to GitHub Actions action, based on v8 [VS Marketplace](https://marketplace.visualstudio.com/items?itemName=Orschel.HyperV)
 - Added (PowerShell over) SSH mode
 - Renamed commands for consistency
+- Updated to  @actions/github v6.0.0.
 
 ## Usage
 
