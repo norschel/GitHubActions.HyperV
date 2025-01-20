@@ -27,10 +27,7 @@ Write-Host "Script directory is $PSScriptRoot"
 $loggingLibPath = "$PSScriptRoot\Logging.ps1"
 if (Test-Path $loggingLibPath) {
 	Write-Host "Loading logging library from $loggingLibPath"
-	# get the directory of the current running script
-
-	$loggingLibContent = [System.IO.File]::ReadAllText("$loggingLibPath");
-	&$loggingLibContent
+	. $loggingLibPath
 
 	Write-Host "Logging library loaded"
 }
