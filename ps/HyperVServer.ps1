@@ -29,7 +29,7 @@ if (Test-Path $loggingLibPath) {
 	Write-Host "Loading logging library from $loggingLibPath"
 	# get the directory of the current running script
 
-	$loggingLibContent = Get-Content -Path $loggingLibPath -Raw
+	$loggingLibContent = [System.IO.File]::ReadAllText("$loggingLibPath");
 	&$loggingLibContent
 
 	Write-Host "Logging library loaded"
