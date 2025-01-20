@@ -64,7 +64,11 @@ inputs:
   sshport:
     description: 'SSH Port'
     required: false
-    default: '22'  
+    default: '22'
+  pwshcore:
+    description: 'Use PowerShell Core instead of Windows PowerShell'
+    required: false
+    default: 'true'
 runs:
   using: 'node20'
   main: 'dist/index.js'

@@ -40,7 +40,7 @@ async function executeInPowerShellRemoteMode() {
     var hyperVCmd = String.prototype.concat(".\\ps\\HyperVServer.ps1");
     hyperVCmd += String.prototype.concat(createHyperVScriptCommand());
     endGroup();
-    const pwshHyperV = spawn("powershell.exe", [hyperVCmd], {
+    const pwshHyperV = spawn(getPwsh(), [hyperVCmd], {
       stdio: "inherit",
     });
 
@@ -177,7 +177,7 @@ async function executeInSSHMode() {
       port: sshPort,
       username: sshUsername,
       password: sshPassword,
-    });
+    }, getPwsh());
   }
   else {
     console.log("### Connecting via SSH with private key");
@@ -231,6 +231,17 @@ function getBoolean(value: any): boolean {
       return false;
   }
 }
+
+function getPwsh(): string {
+  var pwshCore = getBoolean("pwshcore");
+  if (pwshCore) {
+    return "pwsh.exe";
+  }
+  else {
+    return "powershell.exe";
+  }
+}
+
 
 if (require.main === module) {
   main();

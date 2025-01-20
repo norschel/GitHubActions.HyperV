@@ -3,7 +3,7 @@ import { Client, ConnectConfig } from 'ssh2';
 export class PowerShellSSHClient {
   private readonly client: Client;
 
-  constructor(private readonly config: ConnectConfig) {
+  constructor(private readonly config: ConnectConfig, private readonly pwsh: string = "pwsh") {
     this.client = new Client();
   }
 
@@ -25,7 +25,7 @@ export class PowerShellSSHClient {
     console.log("### SSH Tunnel - Remote script path: " + remoteLogScriptPath);
     await this.uploadFile(conn, scriptPath, remoteLogScriptPath);
     
-    var result = await this.sendCommand(`powershell -Command "${remoteScriptPath} ${scriptArguments}"`, conn);
+    var result = await this.sendCommand(`pwsh -File ${remoteScriptPath} ${scriptArguments}`, conn);
     result = result.trim();
     //console.log("### SSH Tunnel - Script result: ");
     //console.log(result);
