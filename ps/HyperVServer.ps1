@@ -24,17 +24,18 @@ param(
  # Load logging library
 Write-Host "Script directory is $PSScriptRoot"
 # load the logging library if file exists otherwise write an error message
-if (Test-Path "$PSScriptRoot\Logging.ps1") {
-	Write-Host "Loading logging library from $PSScriptRoot"
+$loggingLibPath = "$PSScriptRoot\Logging.ps1"
+if (Test-Path $loggingLibPath) {
+	Write-Host "Loading logging library from $loggingLibPath"
 	# get the directory of the current running script
 
-	$loggingLibContent = Get-Content -Path "$PSScriptRoot\\Logging.ps1" -Raw
+	$loggingLibContent = Get-Content -Path $loggingLibPath -Raw
 	&$loggingLibContent
 
 	Write-Host "Logging library loaded"
 }
 else {
-	Write-Host "Logging library not found in $PSScriptRoot"
+	Write-Host "Logging library not found in $loggingLibPath"
 }
 
 
