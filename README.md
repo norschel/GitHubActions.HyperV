@@ -18,7 +18,7 @@ This GitHub Actions action supports start and stop a virtual machine plus create
 
 <!-- start usage -->
 ```yaml
-uses: norschel/GitHubActions.HyperV@v1
+uses: norschel/GitHubActions.HyperV@v2
 name: Hyper-V - StartVM
 with:
   # Hyper-V hostname (FQDN, hostname or IP)
