@@ -110,7 +110,14 @@ class PowerShellSSHClient {
                 })
                     .on('data', (data) => {
                     result += data.toString().trim();
-                    console.log("(SSH-STDIN) " + data.toString().trim());
+                    // if result contains two times '::' then it's a logging message
+                    var lines = result.split('::');
+                    if (lines.length > 2) {
+                        console.log(data.toString().trim());
+                    }
+                    else {
+                        console.log("(SSH-STDIN) " + data.toString().trim());
+                    }
                 })
                     .stderr.on('data', (data) => {
                     console.log('(SSH-STDERR) ' + data.toString().trim());
@@ -50665,7 +50672,7 @@ function getBoolean(value) {
 function getPwsh() {
     var pwshCore = getBoolean("pwshcore");
     if (pwshCore) {
-        return "pwsh.exe";
+        return "pwsh";
     }
     else {
         return "powershell.exe";
