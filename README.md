@@ -5,12 +5,14 @@ This GitHub Actions action supports start and stop a virtual machine plus create
 
 ## Changelog / What's new?
 
-- Ported Azure Pipeline Hyper-V task to GitHub Actions action, based on v8 [VS Marketplace](https://marketplace.visualstudio.com/items?itemName=Orschel.HyperV)
-- Added (PowerShell over) SSH mode
-- Renamed commands for consistency
-- Updated to  @actions/github v6.0.0.
-- Allow to use PowerShell Core / Windows PowerShell
-- Moved logging commands into library to allow using core script for GH action and AzD pipeline task
+- v1
+  - Ported Azure Pipeline Hyper-V task to GitHub Actions action, based on v8 [VS Marketplace](https://marketplace.visualstudio.com/items?itemName=Orschel.HyperV)
+  - Added (PowerShell over) SSH mode (for cross-platform support)
+  - Renamed commands for consistency
+- v2:  
+  - Updated to  @actions/github v6.0.0
+  - Allow to choose PowerShell Core / Windows PowerShell
+  - Moved logging commands into library to allow using core script for GH action and AzD pipeline task
 
 ## Usage
 
@@ -80,7 +82,8 @@ Prerequisites:
   - Hyper-V module for Windows PowerShell is installed on GitHub Runner system, for installation instructions see official Microsoft documentation ( [Link](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-R2-and-2012/dn632582(v=ws.11)?redirectedfrom=MSDN#installing-the-hyper-v-management-tools))
 
 - SSH Mode
-  - GitHub Actions Runner can be installed on every supported operating system
+  - Use this mode if your GitHub Actions Runner is running on non-Windows operating systems!!!
+  - GitHub Actions Runner can be installed on every supported operating system (incl. Windows)
   - SSH user must be member of "Hyper-V Administrators" group on (remote) Hyper-V server
   - OpenSSH server (Windows optional features) is installed on Windows, for installation instruction see official Microsoft documentation ([Link](https://learn.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse?tabs=gui#install-openssh-for-windows))
   - Hyper-V module is installed on the same system as OpenSSH server, for installation instructions see official Microsoft documention ( [Link](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-R2-and-2012/dn632582(v=ws.11)?redirectedfrom=MSDN#installing-the-hyper-v-management-tools))
