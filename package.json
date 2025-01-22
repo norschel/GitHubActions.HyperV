@@ -1,10 +1,10 @@
 {
   "name": "gha_hyperv",
-  "version": "1.0.0",
-  "description": "",
+  "version": "2.0.0",
+  "description": "GitHub Actions Hyper-V action",
   "main": "index.js",
   "scripts": {
-    "build": "tsc && ncc build",
+    "build": "tsc --project . && ncc build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
