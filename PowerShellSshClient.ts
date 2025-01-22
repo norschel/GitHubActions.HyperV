@@ -109,17 +109,10 @@ export class PowerShellSSHClient {
           })
           .on('data', (data: string) => {
             result += data.toString().trim();
-            // if result contains two times '::' then it's a logging message
-            var lines = result.split('::');
-            if (lines.length > 2) {
-              console.log(data.toString().trim());
-            }
-            else {
-              console.log("(SSH-STDIN) " + data.toString().trim());
-            }
+            console.log(data.toString().trim());
           })
           .stderr.on('data', (data) => {
-            console.log('(SSH-STDERR) ' + data.toString().trim());
+            console.log('(SSH-Error) ' + data.toString().trim());
             //reject(data.toString().trim());
           });
       });
