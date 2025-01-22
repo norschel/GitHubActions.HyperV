@@ -207,7 +207,6 @@ async function executeInSSHMode() {
   }
 }
 
-
 //source: https://stackoverflow.com/questions/1812245/what-is-the-best-way-to-test-for-an-empty-string-with-jquery-out-of-the-box
 function isEmpty(value: string | null): boolean {
   return (
@@ -235,13 +234,12 @@ function getBoolean(value: any): boolean {
 function getPwsh(): string {
   var pwshCore = getBoolean("pwshcore");
   if (pwshCore) {
-    return "pwsh.exe";
+    return "pwsh";
   }
   else {
     return "powershell.exe";
   }
 }
-
 
 if (require.main === module) {
   main();

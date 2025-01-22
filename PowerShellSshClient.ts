@@ -10,7 +10,7 @@ export class PowerShellSSHClient {
   async executeScript(scriptPath: string, scriptArguments: string): Promise<string> {
     console.log("### SSH Tunnel - Executing script:" + scriptPath);
     const conn = await this.connect();
-    
+
     console.log("### SSH Tunnel - Retrieving remote temp folder");
     var remoteTempFolder = await this.sendCommand('echo %temp%', conn);
     remoteTempFolder = remoteTempFolder.trim();
@@ -19,7 +19,7 @@ export class PowerShellSSHClient {
     var remoteScriptPath = String.prototype.concat(remoteTempFolder, '\\HyperVServer.ps1');
     console.log("### SSH Tunnel - Remote script path: " + remoteScriptPath);
     await this.uploadFile(conn, scriptPath, remoteScriptPath);
-    
+
     // we need to upload the logging lib into ps folder because of relative paths which are different in PS-Mode
     var remoteLogScriptPath = String.prototype.concat(remoteTempFolder, '\\Logging.ps1');
     console.log("### SSH Tunnel - Remote script path: " + remoteLogScriptPath);
@@ -30,7 +30,7 @@ export class PowerShellSSHClient {
     scriptFileName = scriptFileName.substring(0, scriptFileName.length - 4);
     var logScriptPath = scriptPath.replace(scriptFileName, "Logging");
     await this.uploadFile(conn, logScriptPath, remoteLogScriptPath);
-    
+
     var result = await this.sendCommand(`${this.pwsh} -File ${remoteScriptPath} ${scriptArguments}`, conn);
     result = result.trim();
     //console.log("### SSH Tunnel - Script result: ");
@@ -109,7 +109,14 @@ export class PowerShellSSHClient {
           })
           .on('data', (data: string) => {
             result += data.toString().trim();
-            console.log("(SSH-STDIN) " + data.toString().trim());
+            // if result contains two times '::' then it's a logging message
+            var lines = result.split('::');
+            if (lines.length > 2) {
+              console.log(data.toString().trim());
+            }
+            else {
+              console.log("(SSH-STDIN) " + data.toString().trim());
+            }
           })
           .stderr.on('data', (data) => {
             console.log('(SSH-STDERR) ' + data.toString().trim());
