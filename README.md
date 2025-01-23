@@ -11,6 +11,7 @@ This GitHub Actions action supports start and stop a virtual machine plus create
   - Renamed commands for consistency
 - v2:  
   - Updated to  @actions/github v6.0.0
+  - Node20 support
   - Allow to choose PowerShell Core / Windows PowerShell
   - Moved logging commands into library to allow using core script for GH action and AzD pipeline task
 
