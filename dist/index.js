@@ -9,6 +9,7 @@
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.PowerShellSSHClient = void 0;
 const ssh2_1 = __nccwpck_require__(5869);
+var _disconnected = false;
 class PowerShellSSHClient {
     config;
     pwsh;
@@ -53,9 +54,11 @@ class PowerShellSSHClient {
                 resolve(this.client);
             })
                 .on('error', (err) => {
-                console.log("### SSH Tunnel - Connection error");
-                console.log(err);
-                reject(err);
+                if (!_disconnected) {
+                    console.log("### SSH Tunnel - Connection error");
+                    console.log(err);
+                    reject(err);
+                }
             })
                 /*.on('keyboard-interactive', function (this: any, name, descr, lang, prompts, finish) {
                 console.log("### SSH Tunnel - Warning: KEYBOARD INTERACTIVE is used. It's not secure.");
@@ -63,6 +66,7 @@ class PowerShellSSHClient {
                 return finish([password])
                 })*/
                 .connect(this.config);
+            _disconnected = false;
             console.log("### SSH Tunnel - Connected");
         });
     }
@@ -105,7 +109,7 @@ class PowerShellSSHClient {
                         console.log("### SSH Tunnel - Error executing command via PowerShell. Exit code: " + code + " Signal: " + signal);
                         reject("Error executing command via PowerShell. Exit code:" + code + " Signal:" + signal);
                     }
-                    console.log("### SSH Tunnel - Exit code:" + code + " signal:" + signal);
+                    console.log("### SSH Tunnel - Successfull executed script via PowerShell. Exit code:" + code + " signal:" + signal);
                     resolve(result);
                 })
                     .on('data', (data) => {
@@ -123,6 +127,7 @@ class PowerShellSSHClient {
         return new Promise((resolve, reject) => {
             console.log("### SSH Tunnel - Disconnecting");
             conn.end();
+            _disconnected = true;
             console.log("### SSH Tunnel - Disconnected");
         });
     }

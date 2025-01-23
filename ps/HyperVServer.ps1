@@ -21,18 +21,18 @@ param(
 
 [string]$ConfirmPreference = "None"
 
- # Load logging library
-Write-Host "Script directory is $PSScriptRoot"
+# Load logging library
+Write-Output "Script directory is $PSScriptRoot"
 # load the logging library if file exists otherwise write an error message
 $loggingLibPath = "$PSScriptRoot\Logging.ps1"
 if (Test-Path $loggingLibPath) {
-	Write-Host "Loading logging library from $loggingLibPath"
+	Write-Output "Loading logging library from $loggingLibPath"
 	. $loggingLibPath
 
-	Write-Host "Logging library loaded"
+	Write-Output "Logging library loaded"
 }
 else {
-	Write-Host "Logging library not found in $loggingLibPath"
+	Write-Output "Logging library not found in $loggingLibPath"
 }
 
 
@@ -330,7 +330,7 @@ function Get-ApplicationsHealthyStatusOfStartHyperVVM {
 
 	$finishedVMs = New-Object System.Collections.ArrayList;
 	$workInProgress = $true;
- 	write-LogSectionStart("Status check messages");
+	write-LogSectionStart("Status check messages");
 	while ($workInProgress) {
 		for ($i = 0; $i -lt $vmnames.Count; $i++) {
 			$vmname = $vmnames[$i];
@@ -356,7 +356,7 @@ function Get-ApplicationsHealthyStatusOfStartHyperVVM {
 			}
 		}
 	}
- 	write-LogSectionEnd('Status check messages');
+	write-LogSectionEnd('Status check messages');
 
 	$workInProgress = $true;
 	while ($workInProgress) {
@@ -367,7 +367,7 @@ function Get-ApplicationsHealthyStatusOfStartHyperVVM {
 
 			# backup for future -and $vm.Heartbeat -ne "OkApplicationsUnknown"
 			# hyper-v show unkown in case the hyper-v extensions are not uptodate
-   			write-LogSectionStart('Status check messages');
+			write-LogSectionStart('Status check messages');
 			while ($vm.Heartbeat -ne "OkApplicationsHealthy" -and !$circuitBreaker) {
 				Start-Sleep -Seconds 5
 				write-LogInfo('Checking status again in 5 sec.')
@@ -402,7 +402,7 @@ function Get-ApplicationsHealthyStatusOfStartHyperVVM {
 					continue
 				}
 			}
-   			write-LogSectionEnd('Status check messages');
+			write-LogSectionEnd('Status check messages');
 
 			$workInProgress = $false;
 			write-LogInfo("The VM $vmname has been started.");
@@ -462,7 +462,7 @@ function Get-TimeBasedStatusOfStartHyperVVM {
 
 		write-LogInfo("Waiting interval is reached in $timeBasedStatusWaitIntervalLeft sec.")
 	}
- 	write-LogSectionEnd('Status check messages');
+	write-LogSectionEnd('Status check messages');
 	write-LogInfo("Waiting interval $timeBasedStatusWaitInterval seconds reached. We go on ...")
 }
 
@@ -1087,7 +1087,7 @@ Try {
 
 	Get-HyperVCmdletsAvailable
 	Get-ParameterOverview
- 	write-LogSectionEnd('Hyper-V action core script general info')
+	write-LogSectionEnd('Hyper-V action core script general info')
 
 	Set-HyperVCmdletCacheDisabled -Confirm:$false
 

@@ -1,5 +1,7 @@
 import { Client, ConnectConfig } from 'ssh2';
 
+var _disconnected = false;
+
 export class PowerShellSSHClient {
   private readonly client: Client;
 
@@ -48,9 +50,11 @@ export class PowerShellSSHClient {
           resolve(this.client);
         })
         .on('error', (err) => {
-          console.log("### SSH Tunnel - Connection error");
-          console.log(err);
-          reject(err);
+          if (!_disconnected) {
+            console.log("### SSH Tunnel - Connection error");
+            console.log(err);
+            reject(err);
+          }
         })
         /*.on('keyboard-interactive', function (this: any, name, descr, lang, prompts, finish) {
         console.log("### SSH Tunnel - Warning: KEYBOARD INTERACTIVE is used. It's not secure.");
@@ -58,6 +62,7 @@ export class PowerShellSSHClient {
         return finish([password])
         })*/
         .connect(this.config);
+      _disconnected = false;
       console.log("### SSH Tunnel - Connected");
     });
   }
@@ -104,7 +109,7 @@ export class PowerShellSSHClient {
               console.log("### SSH Tunnel - Error executing command via PowerShell. Exit code: " + code + " Signal: " + signal);
               reject("Error executing command via PowerShell. Exit code:" + code + " Signal:" + signal);
             }
-            console.log("### SSH Tunnel - Exit code:" + code + " signal:" + signal);
+            console.log("### SSH Tunnel - Successfull executed script via PowerShell. Exit code:" + code + " signal:" + signal);
             resolve(result);
           })
           .on('data', (data: string) => {
@@ -123,6 +128,7 @@ export class PowerShellSSHClient {
     return new Promise((resolve, reject) => {
       console.log("### SSH Tunnel - Disconnecting");
       conn.end();
+      _disconnected = true;
       console.log("### SSH Tunnel - Disconnected");
     });
   }
