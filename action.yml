@@ -1,9 +1,9 @@
-name: 'Norschel(Xpirit) Hyper-V Action'
+name: 'Norschel (Xebia) Hyper-V Action'
 description: 'Remote control Hyper-V virtual machines (HyperV) without SCVMM'
 author: Nico Orschel
 branding:
   icon: 'server'
-  color: 'orange'
+  color: 'purple'
 inputs:
   vmname:
     description: 'VM name'
@@ -64,7 +64,11 @@ inputs:
   sshport:
     description: 'SSH Port'
     required: false
-    default: '22'  
+    default: '22'
+  pwshcore:
+    description: 'Use PowerShell Core instead of Windows PowerShell'
+    required: false
+    default: 'true'
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'dist/index.js'

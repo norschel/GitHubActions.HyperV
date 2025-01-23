@@ -21,9 +21,22 @@ param(
 
 [string]$ConfirmPreference = "None"
 
-import-module .\ps\Logging.ps1
+# Load logging library
+Write-Output "Script directory is $PSScriptRoot"
+# load the logging library if file exists otherwise write an error message
+$loggingLibPath = "$PSScriptRoot\Logging.ps1"
+if (Test-Path $loggingLibPath) {
+	Write-Output "Loading logging library from $loggingLibPath"
+	. $loggingLibPath
 
-write-LogSectionStart("Hyper-V action core script general info")
+	Write-Output "Logging library loaded"
+}
+else {
+	Write-Output "Logging library not found in $loggingLibPath"
+}
+
+
+write-LogSectionStart('Hyper-V action core script general info')
 $timeBasedStatusWaitInterval = $StartVMWaitTimeBasedCheckInterval;
 $statusCheckType = $StartVMStatusCheckType;
 $waitingTimeNumberOfStatusNotifications = $HyperV_StartVMWaitingNumberOfStatusNotifications
@@ -33,7 +46,7 @@ $hyperVPsModuleVersion = $HyperV_PsModuleVersion;
 $Action = $Action.ToLowerInvariant();
 
 function Get-HyperVCmdletsAvailable {
-	write-LogInfo("Checking if Hyper-V PowerShell management commandlets are installed.")
+	write-LogInfo('Checking if Hyper-V PowerShell management commandlets are installed.')
 
 	$hyperVCommands = (
 		('GET-VM'),
@@ -49,20 +62,19 @@ function Get-HyperVCmdletsAvailable {
 
 	foreach ($cmdName in $hyperVCommands) {
 		if (!(Get-Command $cmdName -errorAction SilentlyContinue)) {
-			write-LogNotice("Windows feature ""Microsoft-Hyper-V-Management-PowerShell"" is not installed on the build agent.")
-			write-LogNotice("Please install ""Microsoft-Hyper-V-Management-PowerShell"" by using an Administrator account")
-			write-LogNotice("You can use PowerShell with the following command to install the missing components:")
-			write-LogNotice("Enable-WindowsOptionalFeature –FeatureName Microsoft-Hyper-V-Management-PowerShell,Microsoft-Hyper-V-Management-Clients –Online -All")
+			write-LogNotice('Windows feature ""Microsoft-Hyper-V-Management-PowerShell"" is not installed on the build agent.')
+			write-LogNotice('Please install ""Microsoft-Hyper-V-Management-PowerShell"" by using an Administrator account')
+			write-LogNotice('You can use PowerShell with the following command to install the missing components:')
+			write-LogNotice('Enable-WindowsOptionalFeature –FeatureName Microsoft-Hyper-V-Management-PowerShell,Microsoft-Hyper-V-Management-Clients –Online -All')
 
-			#throw "Microsoft-Hyper-V-Management-PowerShell is not installed."
-			write-LogError("Microsoft-Hyper-V-Management-PowerShell is not installed.")
+			write-LogError('Microsoft-Hyper-V-Management-PowerShell is not installed.')
 			exit 1
 
 			return
 		}
 	}
 
-	write-LogInfo("Microsoft-Hyper-V-Management-PowerShell is installed.")
+	write-LogInfo('Microsoft-Hyper-V-Management-PowerShell is installed.')
 
 }
 
@@ -105,7 +117,8 @@ function Set-HyperVCmdletCacheDisabled {
 			# Variable scope ensures that parent session remains unchanged
 			$ConfirmPreference = 'None'
 
-			write-LogInfo("Disable Hyper-V cmdlet caching.")
+			write-LogInfo('Disable Hyper-V cmdlet caching.')
+			write-LogInfo('Active Hyper-V cmdlet caching can lead to wrong data in case of high workload.')
 			if ($hyperVPsModuleVersion -eq "1.0" -or $hyperVPsModuleVersion -eq "1.1") {
 				Disable-VMEventing -force
 			}
@@ -155,7 +168,8 @@ function Set-HyperVCmdletCacheEnabled {
 			# Variable scope ensures that parent session remains unchanged
 			$ConfirmPreference = 'None'
 
-			write-LogInfo("(Re-)Enable Hyper-V cmdlet caching.")
+			# be careful here with quoting because (re-) can be interpreted as cmdlet
+			write-LogInfo('(Re-)Enable Hyper-V cmdlet caching.')
 			if ($hyperVPsModuleVersion -eq "1.0" -or $hyperVPsModuleVersion -eq "1.1") {
 				Enable-VMEventing -force
 			}
@@ -312,11 +326,11 @@ function Start-HyperVVM {
 function Get-ApplicationsHealthyStatusOfStartHyperVVM {
 	param($vmnames, $hostname)
 
-	write-LogInfo("Waiting until all VM(s) have been started (using ApplicationHealthy status).")
+	write-LogInfo('Waiting until all VM(s) have been started (using ApplicationHealthy status).')
 
 	$finishedVMs = New-Object System.Collections.ArrayList;
 	$workInProgress = $true;
- 	write-LogSectionStart("Status check messages");
+	write-LogSectionStart("Status check messages");
 	while ($workInProgress) {
 		for ($i = 0; $i -lt $vmnames.Count; $i++) {
 			$vmname = $vmnames[$i];
@@ -335,14 +349,14 @@ function Get-ApplicationsHealthyStatusOfStartHyperVVM {
 			if ($vmnames.Count -ne $finishedVMs.Count) {
 				$workInProgress = $true;
 				Start-Sleep -Seconds 5
-				write-LogInfo("Checking status again in 5 sec.")
+				write-LogInfo('Checking status again in 5 sec.')
 			}
 			else {
 				$workInProgress = $false;
 			}
 		}
 	}
- 	write-LogSectionEnd("Status check messages");
+	write-LogSectionEnd('Status check messages');
 
 	$workInProgress = $true;
 	while ($workInProgress) {
@@ -353,10 +367,10 @@ function Get-ApplicationsHealthyStatusOfStartHyperVVM {
 
 			# backup for future -and $vm.Heartbeat -ne "OkApplicationsUnknown"
 			# hyper-v show unkown in case the hyper-v extensions are not uptodate
-   			write-LogSectionStart("Status check messages");
+			write-LogSectionStart('Status check messages');
 			while ($vm.Heartbeat -ne "OkApplicationsHealthy" -and !$circuitBreaker) {
 				Start-Sleep -Seconds 5
-				write-LogInfo("Checking status again in 5 sec.")
+				write-LogInfo('Checking status again in 5 sec.')
 				$vm = Get-VM -Name $vmname -Computername $hostname
 				$heartbeatTimeout = $appHealthyHeartbeatTimeout;
 
@@ -374,7 +388,7 @@ function Get-ApplicationsHealthyStatusOfStartHyperVVM {
 				if ($vm.State -eq "Running" -and $vm.Uptime.Seconds -gt $heartbeatTimeout) {
 					$circuitBreaker = $true;
 					write-LogWarning("Starting VM $vmname reached $heartbeatTimeout minute timeout limit");
-					write-LogWarning("Hyper-V heartbeat has not reported healthy state.")
+					write-LogWarning('Hyper-V heartbeat has not reported healthy state.')
 					write-LogWarning("VM $vmname is in running state and the task finishs execution");
 					break;
 				}
@@ -382,26 +396,26 @@ function Get-ApplicationsHealthyStatusOfStartHyperVVM {
 				if ($vm.State -ne "Running" -and $vm.Uptime.Seconds -gt $heartbeatTimeout) {
 					$circuitBreaker = $true;
 					write-LogWarning("Starting VM $vmname reached $heartbeatTimeout minute timeout limit");
-					write-LogWarning("Hyper-V heartbeat has not reported healthy state.")
-					write-LogError("Abording starting VM $vmname because VM state is not running")
-					write-LogError("Please check logs on Hyper-V server and Build agent to find the root cause and fix any issues.")
+					write-LogWarning('Hyper-V heartbeat has not reported healthy state.')
+					write-LogError('Abording starting VM $vmname because VM state is not running')
+					write-LogError('Please check logs on Hyper-V server and Build agent to find the root cause and fix any issues.')
 					continue
 				}
 			}
-   			write-LogSectionEnd("Status check messages");
+			write-LogSectionEnd('Status check messages');
 
 			$workInProgress = $false;
 			write-LogInfo("The VM $vmname has been started.");
 		}
 	}
 
-	write-LogInfo("All VM(s) have been started.")
+	write-LogInfo('All VM(s) have been started.')
 }
 
 function Get-TimeBasedStatusOfStartHyperVVM {
 	param($vmnames, $hostname)
 
-	write-LogInfo("Waiting until all VM(s) have been started (using TimeBased check).")
+	write-LogInfo('Waiting until all VM(s) have been started (using TimeBased check).')
 	$finishedVMs = New-Object System.Collections.ArrayList;
 
 	$workInProgress = $true;
@@ -423,7 +437,7 @@ function Get-TimeBasedStatusOfStartHyperVVM {
 			if ($vmnames.Count -lt $finishedVMs.Count) {
 				$workInProgress = $true;
 				Start-Sleep -Seconds 5
-				write-LogInfo("Checking status again in 5 sec.")
+				write-LogInfo('Checking status again in 5 sec.')
 			}
 			else {
 				$workInProgress = $false;
@@ -441,14 +455,14 @@ function Get-TimeBasedStatusOfStartHyperVVM {
 
 	[int]$waitingInterval = ($timeBasedStatusWaitInterval / 30);
 
-	write-LogSectionStart("Status check messages");
+	write-LogSectionStart('Status check messages');
 	for ($i = 1; $i -le $waitingTimeNumberOfStatusNotifications; $i++) {
 		Start-Sleep -Seconds $waitingInterval
 		$timeBasedStatusWaitIntervalLeft = $timeBasedStatusWaitInterval - $i * $waitingInterval;
 
 		write-LogInfo("Waiting interval is reached in $timeBasedStatusWaitIntervalLeft sec.")
 	}
- 	write-LogSectionEnd("Status check messages");
+	write-LogSectionEnd('Status check messages');
 	write-LogInfo("Waiting interval $timeBasedStatusWaitInterval seconds reached. We go on ...")
 }
 
@@ -458,7 +472,7 @@ function Get-StatusOfStartHyperVVM {
 	switch ($statusCheckType) {
 		"WaitingTime" { Get-TimeBasedStatusOfStartHyperVVM -vmnames $vmNames -hostname $hostName }
 		"HeartBeatApplicationsHealthy" { Get-ApplicationsHealthyStatusOfStartHyperVVM -vmnames $vmNames -hostname $hostName }
-		default { write-LogInfo("No check for StartVM configured.") }
+		default { write-LogInfo('No check for StartVM configured.') }
 	}
 }
 
@@ -574,7 +588,7 @@ function Stop-VMByTurningOffVM {
 				$vmname = $vmnames[$i];
 				$vm = Get-VM -Name $vmname -Computername $hostname
 				if ($vm.State -ne "Off") {
-					write-LogInfo("Direct turning off the VM $vmname (no regular gracefull shutdown).")
+					write-LogInfo("Direct turning off the VM $vmname without regular gracefull shutdown.")
 					write-LogDebug("Current VM $vmname state: $($vm.State)")
 					write-LogDebug("Current VM $vmname status: $($vm.Status)")
 
@@ -694,15 +708,15 @@ function Get-StatusOfShutdownVM {
 
 			Start-Sleep -Seconds 10
 			$finishedVMs.Clear();
-			write-LogInfo("Checking status again in 10 sec.")
+			write-LogInfo('Checking status again in 10 sec.')
 		}
 		else {
-			write-LogInfo("All configured VMs have been shut down.")
+			write-LogInfo('All configured VMs have been shut down.')
 			$workInProgress = $false;
 		}
 	}
 
-	write-LogInfo("All VM(s) have been shutted down.")
+	write-LogInfo('All VM(s) have been shutted down.')
 }
 
 function Start-TurnOfVM {
@@ -801,7 +815,7 @@ function New-HyperVCheckpoint {
 				if ($null -ne $checkpoint) {
 					write-LogError("Checkpoint $CheckpointName on VM $vmname already exists. Please remove the old checkpoint or choose a different name")
 					#throw "Duplicate checkpoint name."
-					write-LogError("Duplicate checkpoint name.")
+					write-LogError('Duplicate checkpoint name.')
 					exit 1
 				}
 
@@ -822,7 +836,7 @@ function New-HyperVCheckpoint {
 function Get-StatusOfNewHyperVCheckpoint {
 	param($vmnames, $hostname)
 
-	write-LogInfo("Waiting until checkpoint for all VM(s) has been created.")
+	write-LogInfo('Waiting until checkpoint for all VM(s) has been created.')
 
 	$finishedVMs = New-Object System.Collections.ArrayList;
 
@@ -843,8 +857,8 @@ function Get-StatusOfNewHyperVCheckpoint {
 
 			if ($vmnames.Count -ne $finishedVMs.Count) {
 				$workInProgress = $true;
+				write-LogInfo('Checking status again in 5 sec.')
 				Start-Sleep -Seconds 5
-				write-LogInfo("Checking status again in 5 sec.")
 			}
 			else {
 				$workInProgress = $false;
@@ -920,7 +934,7 @@ function Restore-HyperVCheckpoint {
 function Get-StatusOfRestoreHyperVCheckpoint {
 	param($vmnames, $hostname)
 
-	write-LogInfo("Waiting until restoring checkpoint has been finished for all VM(s).")
+	write-LogInfo('Waiting until restoring checkpoint has been finished for all VM(s).')
 
 	$finishedVMs = new-object System.collections.arraylist;
 
@@ -942,7 +956,7 @@ function Get-StatusOfRestoreHyperVCheckpoint {
 			if ($vmnames.Count -ne $finishedVMs.Count) {
 				$workInProgress = $true;
 				Start-Sleep -Seconds 5
-				write-LogInfo("Checking status again in 5 sec.")
+				write-LogInfo('Checking status again in 5 sec.')
 			}
 			else {
 				$workInProgress = $false;
@@ -950,7 +964,7 @@ function Get-StatusOfRestoreHyperVCheckpoint {
 		}
 	}
 
-	write-LogInfo("Restoring checkpoints has been finished for all VM(s).")
+	write-LogInfo('Restoring checkpoints has been finished for all VM(s).')
 }
 
 function Remove-HyperVCheckpoint {
@@ -1019,7 +1033,7 @@ function Remove-HyperVCheckpoint {
 function Get-StatusOfRemoveHyperVCheckpoint {
 	param($vmnames, $hostname)
 
-	write-LogInfo("Waiting until removing checkpoint has been finished for all VM(s).")
+	write-LogInfo('Waiting until removing checkpoint has been finished for all VM(s).')
 
 	$finishedVMs = new-object System.collections.arraylist;
 
@@ -1041,7 +1055,7 @@ function Get-StatusOfRemoveHyperVCheckpoint {
 			if ($vmnames.Count -ne $finishedVMs.Count) {
 				$workInProgress = $true;
 				Start-Sleep -Seconds 5
-				write-LogInfo("Checking status again in 5 sec.")
+				write-LogInfo('Checking status again in 5 sec.')
 			}
 			else {
 				$workInProgress = $false;
@@ -1049,7 +1063,7 @@ function Get-StatusOfRemoveHyperVCheckpoint {
 		}
 	}
 
-	write-LogInfo("Removing checkpoint has been finished for all VM(s).")
+	write-LogInfo('Removing checkpoint has been finished for all VM(s).')
 }
 #endregion
 
@@ -1068,12 +1082,12 @@ Try {
 		write-LogDebug($checkLoadedModules | Format-Table | Out-String)
 	}
 	else {
-		write-LogInfo("Loading Hyper-V system default PowerShell module")
+		write-LogInfo('Loading Hyper-V system default PowerShell module')
 	}
 
 	Get-HyperVCmdletsAvailable
 	Get-ParameterOverview
- 	write-LogSectionEnd("Hyper-V action core script general info")
+	write-LogSectionEnd('Hyper-V action core script general info')
 
 	Set-HyperVCmdletCacheDisabled -Confirm:$false
 
@@ -1114,9 +1128,9 @@ Try {
 Catch {
 	$currentUser = [Security.Principal.WindowsIdentity]::GetCurrent();
 
-	write-LogWarning('You have may not enough permission to use the hyper-v cmdlets, please check this:
-	Add the ' + $currentUser.Name + ' user to the ""Hyper-V Administrator"" and ""Remote Management Users"" group on the target hyper-v host which the agent wants to access.
-	You can authorize the build agent user using two commands: net localgroup "Hyper-V Administrators" ' + $currentUser.Name + ' /add and net localgroup "Remote Management Users" ' + $currentUser.Name + ' /add')
+	write-LogWarning('You have may not enough permission to use the hyper-v cmdlets, please check this:');
+	write-LogWarning('Add the ' + $currentUser.Name + ' user to the ""Hyper-V Administrator"" and ""Remote Management Users"" group on the target hyper-v host which the agent wants to access.');
+	write-LogWarning('You can authorize the build agent user using two commands: net localgroup "Hyper-V Administrators" ' + $currentUser.Name + ' /add and net localgroup "Remote Management Users" ' + $currentUser.Name + ' /add');
 	write-LogError($_.Exception.Message);
 	exit 1;
 }

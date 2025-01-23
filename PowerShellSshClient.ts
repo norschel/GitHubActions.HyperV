@@ -1,23 +1,39 @@
 import { Client, ConnectConfig } from 'ssh2';
 
+var _disconnected = false;
+
 export class PowerShellSSHClient {
   private readonly client: Client;
 
-  constructor(private readonly config: ConnectConfig) {
+  constructor(private readonly config: ConnectConfig, private readonly pwsh: string = "pwsh") {
     this.client = new Client();
   }
 
   async executeScript(scriptPath: string, scriptArguments: string): Promise<string> {
     console.log("### SSH Tunnel - Executing script:" + scriptPath);
     const conn = await this.connect();
+
     console.log("### SSH Tunnel - Retrieving remote temp folder");
     var remoteTempFolder = await this.sendCommand('echo %temp%', conn);
     remoteTempFolder = remoteTempFolder.trim();
     console.log("### SSH Tunnel - Remote temp folder: " + remoteTempFolder);
+
     var remoteScriptPath = String.prototype.concat(remoteTempFolder, '\\HyperVServer.ps1');
     console.log("### SSH Tunnel - Remote script path: " + remoteScriptPath);
     await this.uploadFile(conn, scriptPath, remoteScriptPath);
-    var result = await this.sendCommand(`powershell -Command "${remoteScriptPath} ${scriptArguments}"`, conn);
+
+    // we need to upload the logging lib into ps folder because of relative paths which are different in PS-Mode
+    var remoteLogScriptPath = String.prototype.concat(remoteTempFolder, '\\Logging.ps1');
+    console.log("### SSH Tunnel - Remote script path: " + remoteLogScriptPath);
+
+    // figure out the logging lib path based on the script path
+    var path = require('path');
+    var scriptFileName = path.basename(scriptPath);
+    scriptFileName = scriptFileName.substring(0, scriptFileName.length - 4);
+    var logScriptPath = scriptPath.replace(scriptFileName, "Logging");
+    await this.uploadFile(conn, logScriptPath, remoteLogScriptPath);
+
+    var result = await this.sendCommand(`${this.pwsh} -File ${remoteScriptPath} ${scriptArguments}`, conn);
     result = result.trim();
     //console.log("### SSH Tunnel - Script result: ");
     //console.log(result);
@@ -34,9 +50,11 @@ export class PowerShellSSHClient {
           resolve(this.client);
         })
         .on('error', (err) => {
-          console.log("### SSH Tunnel - Connection error");
-          console.log(err);
-          reject(err);
+          if (!_disconnected) {
+            console.log("### SSH Tunnel - Connection error");
+            console.log(err);
+            reject(err);
+          }
         })
         /*.on('keyboard-interactive', function (this: any, name, descr, lang, prompts, finish) {
         console.log("### SSH Tunnel - Warning: KEYBOARD INTERACTIVE is used. It's not secure.");
@@ -44,6 +62,7 @@ export class PowerShellSSHClient {
         return finish([password])
         })*/
         .connect(this.config);
+      _disconnected = false;
       console.log("### SSH Tunnel - Connected");
     });
   }
@@ -90,15 +109,15 @@ export class PowerShellSSHClient {
               console.log("### SSH Tunnel - Error executing command via PowerShell. Exit code: " + code + " Signal: " + signal);
               reject("Error executing command via PowerShell. Exit code:" + code + " Signal:" + signal);
             }
-            console.log("### SSH Tunnel - Exit code:" + code + " signal:" + signal);
+            console.log("### SSH Tunnel - Successfull executed script via PowerShell. Exit code:" + code + " signal:" + signal);
             resolve(result);
           })
           .on('data', (data: string) => {
             result += data.toString().trim();
-            console.log("(SSH-STDIN) " + data.toString().trim());
+            console.log(data.toString().trim());
           })
           .stderr.on('data', (data) => {
-            console.log('(SSH-STDERR) ' + data.toString().trim());
+            console.log('(SSH-Error) ' + data.toString().trim());
             //reject(data.toString().trim());
           });
       });
@@ -109,6 +128,7 @@ export class PowerShellSSHClient {
     return new Promise((resolve, reject) => {
       console.log("### SSH Tunnel - Disconnecting");
       conn.end();
+      _disconnected = true;
       console.log("### SSH Tunnel - Disconnected");
     });
   }
