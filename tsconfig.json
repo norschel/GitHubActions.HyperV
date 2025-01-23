@@ -1,18 +1,7 @@
 {
-    "compilerOptions": {
-      "target": "es2016",
-      "module": "commonjs",
-      "moduleResolution": "node",
-      "incremental": true,
-      "skipLibCheck": true,
-      "forceConsistentCasingInFileNames": true,
-      "declaration": true,
-      "sourceMap": true,
-      "allowSyntheticDefaultImports": true,
-      "esModuleInterop": true,
-      "strict": true,
-      "noImplicitAny": true,
-      "removeComments": true,
-    },
-    "exclude": ["node_modules", "dist"]
-  }
+  "extends": [ "@tsconfig/recommended/tsconfig.json", "@tsconfig/node20/tsconfig"],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

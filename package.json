@@ -1,10 +1,10 @@
 {
   "name": "gha_hyperv",
-  "version": "1.0.0",
-  "description": "",
+  "version": "2.0.0",
+  "description": "GitHub Actions Hyper-V action",
   "main": "index.js",
   "scripts": {
-    "build": "tsc && ncc build" 
+    "build": "tsc -p ./tsconfig.json && ncc build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -12,17 +12,15 @@
   "license": "ISC",
   "dependencies": {
     "@actions/core": "^1.10.1",
-    "@actions/github": "^5.0.0",
-    "@rauschma/stringio": "^1.4.0",
-    "child-shell": "^5.0.0",
-    "edge": "^7.10.1",
-    "edge-ps": "^0.1.0-pre",
-    "node-powershell": "^5.0.1",
+    "@actions/github": "^6.0.0",
     "ssh2": "^1.14.0"
   },
   "devDependencies": {
+    "@tsconfig/node20": "^20.1.4",
+    "@tsconfig/recommended": "^1.0.5",
     "@types/node": "^20.8.9",
     "@types/ssh2": "^1.11.15",
+    "@vercel/ncc": "^0.36.1",
     "typescript": "^5.2.2"
   }
 }
