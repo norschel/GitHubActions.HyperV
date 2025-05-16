@@ -21,6 +21,6 @@
     "@types/node": "^22.15.17",
     "@types/ssh2": "^1.11.15",
     "@vercel/ncc": "^0.38.3",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.3"
   }
 }
