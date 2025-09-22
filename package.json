@@ -20,7 +20,7 @@
     "@tsconfig/recommended": "^1.0.10",
     "@types/node": "^24.4.0",
     "@types/ssh2": "^1.15.5",
-    "@vercel/ncc": "^0.38.3",
+    "@vercel/ncc": "^0.38.4",
     "typescript": "^5.9.2"
   }
 }
