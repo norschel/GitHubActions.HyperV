@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.11",
-    "@tsconfig/recommended": "^1.0.13",
+    "@tsconfig/recommended": "^1.0.14",
     "@types/node": "^26.6.6",
     "@types/ssh2": "^1.15.6",
     "@vercel/ncc": "^0.45.0",
